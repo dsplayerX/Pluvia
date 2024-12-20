@@ -25,7 +25,7 @@ struct PluviaApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            WeatherStyleBottomBarView()
         }
         .modelContainer(sharedModelContainer)
     }
