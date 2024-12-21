@@ -18,13 +18,17 @@ class WeatherMapPlaceViewModel: ObservableObject {
 
     @Published var weatherDataModel: WeatherDataModel?  // Holds weather data for the current location
     @Published var airDataModel: AirDataModel?  // Holds air quality data for the current location
-    @Published var newLocation = "Battaramulla"
+    @Published var newLocation = "Sydney"  // City name to fetch weather
     // other attributes with suitable comments
     @Published var annotations: [MKPointAnnotation] = []  // Annotations for tourist places
     @Published var errorMessage: String?  // To store error messages for UI alerts
 
     private let apiKey = ""
 
+    func setNewLocation(_ location: String) {
+        newLocation = location
+    }
+    
     // MARK:  function to get coordinates safely for a place:
     func getCoordinatesForCity() async throws -> CLLocationCoordinate2D {
         guard !newLocation.isEmpty else {

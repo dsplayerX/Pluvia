@@ -22,8 +22,6 @@ struct VisitedPlacesView: View {
                         HStack {
                             Text(city.name)
                             Spacer()
-                            Text("\(city.temperature) | \(city.condition)")
-                                .foregroundColor(.gray)
                         }
                     }
                 }
@@ -33,5 +31,5 @@ struct VisitedPlacesView: View {
 }
 
 #Preview {
-    VisitedPlacesView(cities: [City(name: "London", temperature: "12", condition: "Rainy"), City(name: "Paris", temperature: "15", condition: "Sunny"), City(name: "New York", temperature: "10", condition: "Cloudy")])
+    VisitedPlacesView(cities: [City(name: "London"), City(name: "Paris")])
 }

@@ -38,7 +38,7 @@ struct NavBarView: View {
     var body: some View {
         VStack{
             TabView {
-                CurrentWeatherView().background(Color.blue)
+                CurrentWeatherView(city: "London").background(Color.blue)
                     .tabItem{
                         Label("Now", systemImage:  "sun.max.fill")
                     }
@@ -76,9 +76,9 @@ struct NavBarView: View {
     // Helper function to generate mock stored places
         private func storedCities() -> [City] {
             return [
-                City(name: "London", temperature: "12", condition: "Rainy"),
-                City(name: "Paris", temperature: "15", condition: "Sunny"),
-                City(name: "New York", temperature: "10", condition: "Cloudy")
+                City(name: "London"),
+                City(name: "Paris"),
+                City(name: "New York")
             ]
         }
 }

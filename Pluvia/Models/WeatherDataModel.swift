@@ -160,6 +160,7 @@ struct Daily: Codable, Identifiable {
     let dt, sunrise, sunset, moonrise: Int
     let moonset: Int
     let moonPhase: Double
+    let summary: String
     let temp: Temp
     let feelsLike: FeelsLike
     let pressure, humidity: Int
@@ -173,7 +174,7 @@ struct Daily: Codable, Identifiable {
     let uvi: Double
 
     enum CodingKeys: String, CodingKey {
-        case dt, sunrise, sunset, moonrise, moonset
+        case dt, sunrise, sunset, moonrise, moonset, summary
         case moonPhase = "moon_phase"
         case temp
         case feelsLike = "feels_like"
