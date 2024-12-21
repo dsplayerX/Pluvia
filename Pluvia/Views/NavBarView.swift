@@ -18,6 +18,12 @@ struct NavBarView: View {
 
      State variables to manage locations and alertmessages
      */
+    
+    @EnvironmentObject var weatherMapPlaceViewModel: WeatherMapPlaceViewModel
+    @Environment(\.modelContext) private var modelContext // SwiftData's model context (mock example for now)
+    
+    @State private var alertMessage: String? // To manage alert messages
+
 
     // MARK:  Configure the look of tab bar
 
@@ -31,18 +37,8 @@ struct NavBarView: View {
 
     var body: some View {
         VStack{
-
-            VStack{
-                // MARK:  Add view(s) that are common to all tabbed views e.g. - images, textfields, etc
-                Image("wmin")
-                    .resizable()
-                    .scaledToFill()
-                    .opacity(0.5)
-                //                    .ignoresSafeArea()
-                    .frame(maxWidth: .infinity, maxHeight: 70)
-            } //VStack - Inner
             TabView {
-                CurrentWeatherView()
+                CurrentWeatherView().background(Color.blue)
                     .tabItem{
                         Label("Now", systemImage:  "sun.max.fill")
                     }
@@ -55,20 +51,39 @@ struct NavBarView: View {
                     .tabItem {
                         Label("Place Map", systemImage: "map")
                     }
-                VisitedPlacesView(cities: [City(name: "London", temperature: "12", condition: "Rainy"), City(name: "Paris", temperature: "15", condition: "Sunny"), City(name: "New York", temperature: "10", condition: "Cloudy")])
+                VisitedPlacesView(cities: storedCities())
                     .tabItem{
                         Label("Stored Places", systemImage: "globe")
                     }
             } // TabView
             .onAppear {
                 // MARK:  Write code to manage what happens when this view appears
+                Task {
+                        do {
+                            let coordinates = try await weatherMapPlaceViewModel.getCoordinatesForCity()
+                            try await weatherMapPlaceViewModel.fetchWeatherData(lat: coordinates.latitude, lon: coordinates.longitude)
+                            try await weatherMapPlaceViewModel.fetchAirQualityData(lat: coordinates.latitude, lon: coordinates.longitude)
+                        } catch {
+                            weatherMapPlaceViewModel.errorMessage = error.localizedDescription
+                        }
+                    }
             }
 
         }//VStack - Outer
         // add frame modifier and other modifiers to manage this view
     }
+    
+    // Helper function to generate mock stored places
+        private func storedCities() -> [City] {
+            return [
+                City(name: "London", temperature: "12", condition: "Rainy"),
+                City(name: "Paris", temperature: "15", condition: "Sunny"),
+                City(name: "New York", temperature: "10", condition: "Cloudy")
+            ]
+        }
 }
 
 #Preview {
     NavBarView()
+        .environmentObject(WeatherMapPlaceViewModel()) 
 }

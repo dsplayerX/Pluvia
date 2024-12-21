@@ -14,15 +14,10 @@ struct CurrentWeatherView: View {
 
 // MARK:  set up local @State variable to support this view
     var body: some View {
-        VStack{
-            Text("Image shows the information to be presented in this view")
-            Spacer()
-            Image("current")
-                .resizable()
-
-            Spacer()
+        ScrollView{
+            TopWeatherView()
+            ForecastWeatherView()
         }
-        .frame(height: 600)
 
 
 
@@ -30,5 +25,5 @@ struct CurrentWeatherView: View {
 }
 
 #Preview {
-    CurrentWeatherView()
+    CurrentWeatherView().background(Color.blue).environmentObject(WeatherMapPlaceViewModel())
 }

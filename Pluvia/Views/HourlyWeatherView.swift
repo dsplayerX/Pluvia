@@ -13,19 +13,39 @@ struct HourlyWeatherView: View {
     @EnvironmentObject var weatherMapPlaceViewModel: WeatherMapPlaceViewModel
 
     var body: some View {
-        ScrollView {
-            Text("Hourly Forecast Weather for current location)")
-                .font(.title)
-                .padding()
-
-            Text("This is hard wired data - your data will be from api call safely unwrapped")
-            ScrollView(.horizontal,showsIndicators: false){
-
-                Image("hourly")
-
+            VStack(alignment: .leading) {
+                Text("Cloudy conditions expected around 00:30. Wind gusts are up to 11 km/h.")
+                    .foregroundColor(.white)
+                    .font(.caption)
+                
+                Divider().background(Color.white)
+                
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 20) {
+                        ForEach(0..<6) { hour in
+                            VStack {
+                                Text(hour == 0 ? "Now" : "\(hour * 1):00")
+                                    .foregroundColor(.white)
+                                    .font(.caption)
+                                
+                                Image(systemName: "cloud.fill")
+                                    .foregroundColor(.white)
+                                    .font(.title2)
+                                
+                                Text("25°")
+                                    .foregroundColor(.white)
+                                    .font(.caption)
+                            }
+//                            .padding()
+                        }
+                    }
+                }
             }
+            .padding(10)
+            .background(Color.blue.opacity(0.9))
+            .cornerRadius(10)
+            .padding(10)
         }
-    }
 }
 #Preview {
     HourlyWeatherView()

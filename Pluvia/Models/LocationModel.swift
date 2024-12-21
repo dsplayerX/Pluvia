@@ -13,4 +13,5 @@ import Foundation
 class LocationModel {
 
     // MARK:  list of attributes to manage locations
+    
 }

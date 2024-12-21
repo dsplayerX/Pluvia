@@ -15,13 +15,11 @@ struct ForecastWeatherView: View {
 
     var body: some View {
         VStack(spacing: 5){
-
-            HourlyWeatherView() // Similar to EPLClub Card
-                .frame(height:250)
+            HourlyWeatherView() // Similar to EPLClub Card=
             DailyWeatherView() // Similar to EPLClub Row View
 
         }
-        .frame(height: 600)
+//        .frame(height: 600)
         // add modifiers and image to mirror the design required
     }
 }

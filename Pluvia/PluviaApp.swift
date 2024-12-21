@@ -22,10 +22,14 @@ struct PluviaApp: App {
             fatalError("Could not create ModelContainer: \(error)")
         }
     }()
+    
+    @StateObject private var weatherMapPlaceViewModel = WeatherMapPlaceViewModel()
+
 
     var body: some Scene {
         WindowGroup {
             WeatherStyleBottomBarView()
+                .environmentObject(weatherMapPlaceViewModel)
         }
         .modelContainer(sharedModelContainer)
     }
