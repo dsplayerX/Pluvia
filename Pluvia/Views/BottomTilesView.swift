@@ -24,7 +24,24 @@ struct BottomTilesView: View {
                             dewPiont: weatherData.current.dewPoint
                         )
                     }.padding(.horizontal, 20).padding(.vertical, 2.5)
+                    
+                    HStack{
+                        SunriseSunsetView(
+                            sunriseTimestamp: Int(weatherData.current.sunrise!),
+                            sunsetTimestamp: Int(weatherData.current.sunset!),
+                            timezone: weatherData.timezone
+                        )
+                    }.padding(.horizontal, 20).padding(.vertical, 2.5)
+                    
+                    HStack{
+                        UVIndexView(uvIndex: Int(weatherData.current.uvi))
+                        AirPressureView(
+                            pressure: Int(weatherData.current.pressure)
+                        )
+                    }.padding(.horizontal, 20).padding(.vertical, 2.5)
                 }
+                
+                
                 
                 if let airData = weatherMapPlaceViewModel.airDataModel {
                     AirDataCollectionView(airData: airData)
@@ -36,6 +53,6 @@ struct BottomTilesView: View {
     }
 }
 
-#Preview {
-    BottomTilesView()
-}
+//#Preview {
+//    BottomTilesView()
+//}

@@ -8,8 +8,9 @@
 import SwiftData
 import SwiftUI
 
-struct WeatherStyleBottomBarView: View {
+struct WeatherMainView: View {
     @EnvironmentObject var weatherMapPlaceViewModel: WeatherMapPlaceViewModel
+    @Environment(\.colorScheme) var colorScheme
 
     @State private var selectedCityIndex = 0
     @State private var isMapViewPresented = false
@@ -48,7 +49,8 @@ struct WeatherStyleBottomBarView: View {
                         do {
                             weatherMapPlaceViewModel.resetAll()
                             weatherMapPlaceViewModel.setNewLocation(
-                                weatherMapPlaceViewModel.locations[newValue].name)
+                                weatherMapPlaceViewModel.locations[newValue]
+                                    .name)
                             let coordinates =
                                 try await weatherMapPlaceViewModel
                                 .getCoordinatesForCity()
@@ -159,7 +161,9 @@ struct WeatherStyleBottomBarView: View {
                     do {
                         weatherMapPlaceViewModel.resetAll()
                         weatherMapPlaceViewModel.setNewLocation(
-                            weatherMapPlaceViewModel.locations[selectedCityIndex].name)
+                            weatherMapPlaceViewModel.locations[
+                                selectedCityIndex
+                            ].name)
                         let coordinates =
                             try await weatherMapPlaceViewModel
                             .getCoordinatesForCity()
@@ -183,26 +187,57 @@ struct WeatherStyleBottomBarView: View {
 
     private var dynamicBackgroundImage: String {
         guard let weatherData = weatherMapPlaceViewModel.weatherDataModel else {
-            return "BG"  // Fallback image
+            return colorScheme == .dark ? "default_night_bg" : "default_day_bg"  // Fallback default image
         }
 
-        let condition = weatherData.current.weather[0].main.rawValue
-            .lowercased()
+        let conditionID = weatherData.current.weather[0].id
         let hour = Calendar.current.component(.hour, from: Date())
+        let isDay = hour >= 6 && hour < 18
 
-        switch condition {
-        case "clear":
-            return hour >= 6 && hour < 18 ? "BG" : "BG"
-        case "clouds":
-            return hour >= 6 && hour < 18 ? "BG" : "BG"
-        case "rain":
-            return "rainy"
-        case "snow":
-            return "snowy"
-        case "thunderstorm":
-            return "stormy"
+        switch conditionID {
+        // Group 2xx: Thunderstorm
+        case 200...232:
+            return "thunderstorm_bg"
+
+        // Group 3xx: Drizzle
+        case 300...321:
+            return "drizzle_bg"
+
+        // Group 5xx: Rain
+        case 500...504, 520...531:
+            return "rain_bg"
+        case 511:
+            return "snow_bg"  // Snow
+
+        // Group 6xx: Snow
+        case 600...622:
+            return "snow_bg"
+
+        // Group 7xx: Atmosphere
+        case 701:
+            return "mist_bg"
+        case 711:
+            return "smoke_bg"
+        case 721:
+            return "haze_bg"
+        case 741:
+            return "fog_bg"
+        case 781:
+            return "tornado_bg"
+
+        // Group 800: Clear
+        case 800:
+            return isDay ? "clear_day_bg" : "clear_night_bg"
+
+        // Group 80x: Clouds
+        case 801:
+            return isDay ? "cloudy_day_bg" : "cloudy_night_bg"
+        case 802...804:
+            return isDay ? "cloudy_day_bg" : "cloudy_night_bg"
+
+        // Default case
         default:
-            return "defaultBackground"
+            return isDay ? "default_day_bg" : "default_night_bg"
         }
     }
 }
@@ -221,7 +256,7 @@ struct WeatherStyleBottomBarView: View {
             LocationModel(name: "London", latitude: 51.5074, longitude: -0.1278)
         ]
 
-        return WeatherStyleBottomBarView()
+        return WeatherMainView()
             .environmentObject(viewModel)
             .modelContainer(container)
     } catch {

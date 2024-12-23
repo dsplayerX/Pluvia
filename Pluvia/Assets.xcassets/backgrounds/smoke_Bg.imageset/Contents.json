@@ -1,6 +1,7 @@
 {
   "images" : [
     {
+      "filename" : "smoke_bg.jpg",
       "idiom" : "universal",
       "scale" : "1x"
     },

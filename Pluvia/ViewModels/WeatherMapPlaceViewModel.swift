@@ -18,16 +18,16 @@ class WeatherMapPlaceViewModel: ObservableObject {
     /* Add other published varaibles that you are required here, you have been given one main one
      */
     var modelContext: ModelContext
-    @Published var locations: [LocationModel] = []  // List of saved locations
-
+    @Published var locations: [LocationModel] = [] // List of saved locations
+    
     @Published var weatherDataModel: WeatherDataModel?  // Holds weather data for the current location
     @Published var airDataModel: AirDataModel?  // Holds air quality data for the current location
     @Published var currentLocation = ""  // City name to fetch weather
     @Published var annotations: [MKPointAnnotation] = []  // Annotations for tourist places
     @Published var errorMessage: AlertMessage? = nil
-
+    
     private let apiKey = ""
-
+    
     init(modelContext: ModelContext) {
         self.modelContext = modelContext
         fetchLocationsData()
@@ -36,47 +36,40 @@ class WeatherMapPlaceViewModel: ObservableObject {
         if locations.isEmpty {
             currentLocation = "London"
         } else {
-            currentLocation = locations.first?.name ?? "London"  // Fallback to "London" if no valid name exists
+            currentLocation = locations.first?.name ?? "London" // Fallback to "London" if no valid name exists
         }
     }
-
+    
     func fetchLocationsData() {
-        do {
-            let descriptor = FetchDescriptor<LocationModel>(
-                sortBy: [SortDescriptor(\.name)]
-            )
-            locations = try modelContext.fetch(descriptor)
-        } catch {
-            print("Fetch failed")
-        }
-    }
-
-    // MARK: - Add Location
+               do {
+                   let descriptor = FetchDescriptor<LocationModel>(
+                    sortBy: [SortDescriptor(\.name)]
+                   )
+                   locations = try modelContext.fetch(descriptor)
+               } catch {
+                   print("Fetch failed")
+               }
+           }
+    
+        // MARK: - Add Location
     @MainActor
     func addLocation(cityName: String) {
         Task { [weak self] in
-            guard let self = self else { return }  // Ensure `self` is still valid
+            guard let self = self else { return } // Ensure `self` is still valid
             do {
                 // Get coordinates for the city
                 let coordinates = try await getCoordinates(cityName: cityName)
 
                 // Check for duplicates
-                guard
-                    !locations.contains(where: {
-                        $0.name.lowercased() == cityName.lowercased()
-                    })
-                else {
+                guard !locations.contains(where: { $0.name.lowercased() == cityName.lowercased() }) else {
                     DispatchQueue.main.async {
-                        self.errorMessage = AlertMessage(
-                            message: "City already exists.")
+                        self.errorMessage = AlertMessage(message: "City already exists.")
                     }
                     return
                 }
 
                 // Create and save the new location
-                let newLocation = LocationModel(
-                    name: cityName, latitude: coordinates.latitude,
-                    longitude: coordinates.longitude)
+                let newLocation = LocationModel(name: cityName, latitude: coordinates.latitude, longitude: coordinates.longitude)
                 modelContext.insert(newLocation)
                 try modelContext.save()
                 DispatchQueue.main.async {
@@ -84,29 +77,21 @@ class WeatherMapPlaceViewModel: ObservableObject {
                 }
             } catch {
                 DispatchQueue.main.async {
-                    self.errorMessage = AlertMessage(
-                        message:
-                            "Failed to add location: \(error.localizedDescription)"
-                    )
+                    self.errorMessage = AlertMessage(message: "Failed to add location: \(error.localizedDescription)")
                 }
             }
         }
     }
-
+    
     func removeLocation(cityName: String) {
         Task { [weak self] in
             guard let self = self else { return }
 
             do {
                 // Find the location by its name
-                guard
-                    let locationToRemove = self.locations.first(where: {
-                        $0.name.lowercased() == cityName.lowercased()
-                    })
-                else {
+                guard let locationToRemove = self.locations.first(where: { $0.name.lowercased() == cityName.lowercased() }) else {
                     DispatchQueue.main.async {
-                        self.errorMessage = AlertMessage(
-                            message: "City not found.")
+                        self.errorMessage = AlertMessage(message: "City not found.")
                     }
                     return
                 }
@@ -121,18 +106,14 @@ class WeatherMapPlaceViewModel: ObservableObject {
                 }
             } catch {
                 DispatchQueue.main.async {
-                    self.errorMessage = AlertMessage(
-                        message:
-                            "Failed to remove location: \(error.localizedDescription)"
-                    )
+                    self.errorMessage = AlertMessage(message: "Failed to remove location: \(error.localizedDescription)")
                 }
             }
         }
     }
-
+    
     // MARK:  function to get coordinates safely for a place:
-    func getCoordinates(cityName: String) async throws -> CLLocationCoordinate2D
-    {
+    func getCoordinates(cityName: String) async throws -> CLLocationCoordinate2D {
         guard !cityName.isEmpty else {
             throw NSError(
                 domain: "LocationError", code: 400,
@@ -154,15 +135,15 @@ class WeatherMapPlaceViewModel: ObservableObject {
 
         return location.coordinate
     }
-
+    
     func setNewLocation(_ location: String) {
         currentLocation = location
     }
-
+    
     // MARK:  function to get coordinates safely for a place:
     func getCoordinatesForCity() async throws -> CLLocationCoordinate2D {
-        //        print("Fetching coord for current Location: \(currentLocation)")
-
+//        print("Fetching coord for current Location: \(currentLocation)")
+    
         guard !currentLocation.isEmpty else {
             throw NSError(
                 domain: "LocationError", code: 400,
@@ -172,8 +153,7 @@ class WeatherMapPlaceViewModel: ObservableObject {
         }
 
         let geocoder = CLGeocoder()
-        let placemarks = try await geocoder.geocodeAddressString(
-            currentLocation)
+        let placemarks = try await geocoder.geocodeAddressString(currentLocation)
         guard let location = placemarks.first?.location else {
             throw NSError(
                 domain: "GeocodingError", code: 404,
@@ -192,7 +172,7 @@ class WeatherMapPlaceViewModel: ObservableObject {
     ///   - lat: Latitude of the location.
     ///   - lon: Longitude of the location.
     func fetchWeatherData(lat: Double, lon: Double) async throws {
-        //        print("Fetching weather data for lat: \(lat), lon: \(lon)")
+//        print("Fetching weather data for lat: \(lat), lon: \(lon)")
         let urlString =
             "https://api.openweathermap.org/data/3.0/onecall?lat=\(lat)&lon=\(lon)&units=metric&appid=\(apiKey)"
         guard let url = URL(string: urlString) else {
@@ -216,7 +196,7 @@ class WeatherMapPlaceViewModel: ObservableObject {
     ///   - lat: Latitude of the location.
     ///   - lon: Longitude of the location.
     func fetchAirQualityData(lat: Double, lon: Double) async throws {
-        //        print("Fetching air quality data for lat: \(lat), lon: \(lon)")
+//        print("Fetching air quality data for lat: \(lat), lon: \(lon)")
         let urlString =
             "https://api.openweathermap.org/data/2.5/air_pollution?lat=\(lat)&lon=\(lon)&appid=\(apiKey)"
         guard let url = URL(string: urlString) else {
@@ -265,7 +245,7 @@ class WeatherMapPlaceViewModel: ObservableObject {
             }
         }
     }
-
+    
     func resetAll() {
         weatherDataModel = nil
         airDataModel = nil

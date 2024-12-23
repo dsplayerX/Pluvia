@@ -47,7 +47,7 @@ struct DailyWeatherView: View {
                 id: \.element.id
             ) { index, day in
                 DailyWeatherRowView(
-                    index: index, day: day, globalMinTemp: globalMinTemp,
+                    index: index, day: day, timezone:weatherData.timezone, globalMinTemp: globalMinTemp,
                     globalMaxTemp: globalMaxTemp,
                     currentTemp: currentTemp)
             }
@@ -58,6 +58,7 @@ struct DailyWeatherView: View {
 struct DailyWeatherRowView: View {
     let index: Int
     let day: Daily
+    let timezone: String
     let globalMinTemp: Double
     let globalMaxTemp: Double
     let currentTemp: Double
@@ -72,7 +73,8 @@ struct DailyWeatherRowView: View {
             VStack {
                 Image(
                     systemName: mapWeatherIcon(
-                        for: day.weather.first?.id ?? 800)
+                        for: day.weather[0].id, dt: day.dt,
+                        timezone: timezone)
                 )
                 .foregroundColor(.white)
                 .font(.system(size: 20))
@@ -116,28 +118,6 @@ struct DailyWeatherRowView: View {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEE"  // Day of the week
         return formatter.string(from: date)
-    }
-
-    // Map weather condition IDs to system icons
-    private func mapWeatherIcon(for conditionID: Int) -> String {
-        switch conditionID {
-        case 200...232:
-            return "cloud.bolt.rain.fill"  // Thunderstorm
-        case 300...321:
-            return "cloud.drizzle.fill"  // Drizzle
-        case 500...531:
-            return "cloud.rain.fill"  // Rain
-        case 600...622:
-            return "cloud.snow.fill"  // Snow
-        case 701...781:
-            return "cloud.fog.fill"  // Atmosphere
-        case 800:
-            return "sun.max.fill"  // Clear
-        case 801...804:
-            return "cloud.fill"  // Clouds
-        default:
-            return "questionmark"  // Unknown
-        }
     }
 }
 

@@ -65,12 +65,12 @@ struct HourlyWeatherListView: View {
                         Spacer()
 
                         HourlyWeatherIconView(
-                                conditionID: hour.weather.first?.id ?? 800,
-                                dt: hour.dt,
-                                timezone: weatherData.timezone,
-                                pop: hour.pop
+                            conditionID: hour.weather[0].id,
+                            dt: hour.dt,
+                            timezone: weatherData.timezone,
+                            pop: hour.pop
                         )
-                            
+
                         Text("\(Int(hour.temp))°")
                             .foregroundColor(.white)
                             .font(.system(size: 20)).fontWeight(.medium)
@@ -88,7 +88,7 @@ struct HourlyWeatherIconView: View {
     let dt: Int
     let timezone: String
     let pop: Double?
-    
+
     var body: some View {
         VStack {
             Image(
@@ -103,45 +103,13 @@ struct HourlyWeatherIconView: View {
             .frame(height: 16)
             .foregroundColor(.white)
             .padding(.bottom, 0)
-            
+
             if let pop = pop, pop > 0 {
                 Text("\(Int(pop * 100))%")
                     .foregroundColor(.cyan)
                     .font(.system(size: 10))
             }
         }.frame(height: 50)
-        .frame(maxWidth: .infinity)
-    }
-    
-    // Maps the weather condition ID to an SF Symbol name based on day/night
-    private func mapWeatherIcon(for conditionID: Int, dt: Int, timezone: String) -> String {
-        let date = Date(timeIntervalSince1970: TimeInterval(dt))
-        let formatter = DateFormatter()
-        formatter.timeZone = TimeZone(identifier: timezone) ?? .current
-        formatter.dateFormat = "HH"
-        let hour = Int(formatter.string(from: date)) ?? 0
-        let isDay = (hour >= 6 && hour < 18)
-
-        switch conditionID {
-        case 200...232:
-            return "cloud.bolt.fill" // Thunderstorm
-        case 300...321:
-            return isDay
-                ? "cloud.sun.drizzle.fill" : "cloud.moon.drizzle.fill"  // Drizzle
-        case 500...531:
-            return "cloud.rain.fill"  // Rain
-        case 600...622:
-            return "cloud.snow.fill"  // Snow
-        case 701...781:
-            return isDay ? "cloud.sun.fog.fill" : "cloud.moon.fog.fill"  // Atmosphere
-        case 800:
-            return isDay ? "sun.max.fill" : "moon.fill"  // Clear sky
-        case 801:
-            return isDay ? "cloud.sun.fill" : "cloud.moon.fill"  // Few clouds
-        case 802...804:
-            return "cloud.fill"  // Overcast
-        default:
-            return "questionmark"  // Unknown
-        }
+            .frame(maxWidth: .infinity)
     }
 }

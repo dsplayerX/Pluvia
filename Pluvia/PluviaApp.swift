@@ -13,7 +13,7 @@ struct PluviaApp: App {
     let container: ModelContainer
     var body: some Scene {
             WindowGroup {
-                WeatherStyleBottomBarView()
+                WeatherMainView()
             }.environmentObject(
                 WeatherMapPlaceViewModel(modelContext: container.mainContext)
             )
