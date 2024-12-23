@@ -38,7 +38,7 @@ struct NavBarView: View {
     var body: some View {
         VStack{
             TabView {
-                CurrentWeatherView(city: "London").background(Color.blue)
+                CurrentWeatherView().background(Color.blue)
                     .tabItem{
                         Label("Now", systemImage:  "sun.max.fill")
                     }
@@ -51,7 +51,7 @@ struct NavBarView: View {
                     .tabItem {
                         Label("Place Map", systemImage: "map")
                     }
-                VisitedPlacesView(cities: storedCities())
+                VisitedPlacesView()
                     .tabItem{
                         Label("Stored Places", systemImage: "globe")
                     }
@@ -64,7 +64,7 @@ struct NavBarView: View {
                             try await weatherMapPlaceViewModel.fetchWeatherData(lat: coordinates.latitude, lon: coordinates.longitude)
                             try await weatherMapPlaceViewModel.fetchAirQualityData(lat: coordinates.latitude, lon: coordinates.longitude)
                         } catch {
-                            weatherMapPlaceViewModel.errorMessage = error.localizedDescription
+                            weatherMapPlaceViewModel.errorMessage = AlertMessage(message: error.localizedDescription)
                         }
                     }
             }
@@ -72,18 +72,9 @@ struct NavBarView: View {
         }//VStack - Outer
         // add frame modifier and other modifiers to manage this view
     }
-    
-    // Helper function to generate mock stored places
-        private func storedCities() -> [City] {
-            return [
-                City(name: "London"),
-                City(name: "Paris"),
-                City(name: "New York")
-            ]
-        }
 }
 
-#Preview {
-    NavBarView()
-        .environmentObject(WeatherMapPlaceViewModel()) 
-}
+//#Preview {
+//    NavBarView()
+//        .environmentObject(WeatherMapPlaceViewModel()) 
+//}

@@ -13,13 +13,10 @@ import SwiftData
 
 @Model
 class LocationModel {
+    @Attribute(.unique) var name: String
+    var latitude: Double
+    var longitude: Double
 
-    // MARK:  list of attributes to manage locations
-    @Attribute(.unique) var name: String // City name
-    var latitude: Double // Latitude
-    var longitude: Double // Longitude
-    
-    
     init(name: String, latitude: Double, longitude: Double) {
         self.name = name
         self.latitude = latitude

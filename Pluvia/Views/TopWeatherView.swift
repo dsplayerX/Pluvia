@@ -15,37 +15,38 @@ struct TopWeatherView: View {
         VStack(alignment: .center, spacing: 5) {
             if let weatherData = weatherMapPlaceViewModel.weatherDataModel {
                 
-            Text(weatherMapPlaceViewModel.newLocation)
+                Text(weatherMapPlaceViewModel.currentLocation.capitalized)
                 .foregroundColor(.white)
                 .font(.system(size: 32))
                 .shadow(radius: 10)
             
                 
                 Text(
-                    "\(Int( weatherMapPlaceViewModel.weatherDataModel!.current.temp))°"
+                    "\(Int(weatherData.current.temp))°"
                 )
                 .foregroundColor(.white)
                 .font(.system(size: 100))
                 .fontWeight(.thin).shadow(radius: 10)
                 
                 Text(
-                    "\(weatherMapPlaceViewModel.weatherDataModel!.current.weather[0].main.rawValue)"
+                    "\(weatherData.current.weather[0].main.rawValue)"
                 )
-                    .foregroundColor(.white)
-                    .font(.system(size: 18))
-                    .fontWeight(.medium).shadow(radius: 10)
+                .foregroundColor(Color.white)
+                .opacity(0.9)
+                    .font(.system(size: 20))
+                    .fontWeight(.medium).shadow(radius: 10).padding(.top, -5)
                 
                 Text(
-                    "H:\(Int(weatherMapPlaceViewModel.weatherDataModel!.daily[0].temp.max))° L:\(Int(weatherMapPlaceViewModel.weatherDataModel!.daily[0].temp.max))°"
+                    "H:\(Int(weatherData.daily[0].temp.max))° L:\(Int(weatherData.daily[0].temp.max))°"
                 )
                 .foregroundColor(.white)
-                .font(.system(size: 18))
-                .fontWeight(.medium).shadow(radius: 10)
+                .font(.system(size: 20))
+                .fontWeight(.medium).shadow(radius: 10).padding(.top, -5)
                 
             } else {
                 ProgressView("").foregroundColor(.white)
                     .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                    .scaleEffect(4)
+                    .scaleEffect(3)
                     .shadow(radius: 10).padding(.top, 100)
             }
         }
@@ -55,6 +56,6 @@ struct TopWeatherView: View {
 }
 
 
-#Preview {
-    TopWeatherView().background(Color.blue).padding(.top, 50).environmentObject(WeatherMapPlaceViewModel())
-}
+//#Preview {
+//    TopWeatherView().background(Color.blue).padding(.top, 50).environmentObject(WeatherMapPlaceViewModel())
+//}

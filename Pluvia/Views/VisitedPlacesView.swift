@@ -8,28 +8,73 @@
 import SwiftUI
 
 struct VisitedPlacesView: View {
-/*
-    Set up the @Environment(\.modelContext) for SwiftData's Model Context
-    Use @Query to fetch data from SwiftData models
-*/
-    
-    let cities: [City]
-    
-    var body: some View {       
-            NavigationView {
+    @EnvironmentObject var weatherMapPlaceViewModel: WeatherMapPlaceViewModel
+
+    @State private var newCityName: String = ""
+
+    var body: some View {
+        NavigationView {
+            VStack {
+                // Search bar to add new cities
+                HStack {
+                    TextField("Enter city name", text: $newCityName)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .padding(.leading, 10)
+
+                    Button(action: {
+                        Task {
+                            weatherMapPlaceViewModel
+                                .addLocation(cityName: newCityName.capitalized)
+                                newCityName = ""
+                            
+                        }
+                    
+                    }) {
+                        Text("Add")
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(Color.blue)
+                            .foregroundColor(.white)
+                            .cornerRadius(5)
+                    }
+                    .disabled(newCityName.isEmpty)
+                }
+                .padding()
+
+                // List of saved cities
                 List {
-                    ForEach(cities, id: \.name) { city in
+                    ForEach(weatherMapPlaceViewModel.locations, id: \.name) { city in
                         HStack {
-                            Text(city.name)
+                            Text(city.name.capitalized)
                             Spacer()
+                            VStack (alignment:.leading){
+                                Text("LON: \(city.latitude, specifier: "%.4f")")
+                                Text("LAT: \(city.longitude, specifier: "%.4f")")
+                            }
+                            
+                        }
+                        .swipeActions {
+                            Button(role: .destructive) {
+                                Task {
+                                    weatherMapPlaceViewModel.removeLocation(cityName: city.name)
+                                }
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
                         }
                     }
                 }
                 .navigationTitle("Saved Cities")
             }
+            .alert(item: $weatherMapPlaceViewModel.errorMessage) { errorMessage in
+                Alert(
+                    title: Text("Error"),
+                    message: Text(errorMessage.message),
+                    dismissButton: .default(Text("OK")) {
+                        weatherMapPlaceViewModel.errorMessage = nil
+                    }
+                )
+            }
+        }
     }
-}
-
-#Preview {
-    VisitedPlacesView(cities: [City(name: "London"), City(name: "Paris")])
 }

@@ -69,6 +69,14 @@ class DateFormatterUtils {
         dateFormatter.timeZone = timeZone // Set the timezone dynamically
         return dateFormatter.string(from: date)
     }
+    
+    static func formattedDate24Hour(from timestamp: TimeInterval, timeZone: TimeZone) -> String {
+        let date = Date(timeIntervalSince1970: timestamp)
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "HH:mm" // 24-hour format
+        dateFormatter.timeZone = timeZone
+        return dateFormatter.string(from: date)
+    }
 
     static func formattedDateWithDay(from timestamp: TimeInterval) -> String {
             let dateFormatter = DateFormatter()

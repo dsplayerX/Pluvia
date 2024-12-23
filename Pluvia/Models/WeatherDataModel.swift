@@ -38,6 +38,8 @@ struct Current: Codable, Identifiable {
     let weather: [Weather]
     let windGust, pop: Double?
     let rain: Rain?
+    let snow: Snow?
+    let alerts: [AlertDM]?
 
     enum CodingKeys: String, CodingKey {
         case dt, sunrise, sunset, temp
@@ -49,7 +51,7 @@ struct Current: Codable, Identifiable {
         case windDeg = "wind_deg"
         case weather
         case windGust = "wind_gust"
-        case pop, rain
+        case pop, rain, snow, alerts
     }
 }
 
@@ -58,6 +60,17 @@ struct Rain: Codable {
     let the1H: Double
 
     enum CodingKeys: String, CodingKey {
+        case the1H = "1h"
+    }
+}
+
+
+// MARK: - Snow
+struct Snow: Codable {
+    let the1H: Double
+
+    enum CodingKeys: String, CodingKey {
+
         case the1H = "1h"
     }
 }
@@ -129,6 +142,7 @@ enum Description: String, Codable {
     case raggedShowerRain = "ragged shower rain"
     case lightSnow = "light snow"
     case Snow = "Snow"
+    case snow = "snow"
     case HeavySnow = "Heavy snow"
     case Sleet = "Sleet"
     case LightShowerSleet = "Light shower sleet"
@@ -141,10 +155,11 @@ enum Description: String, Codable {
     case mist = "mist"
     case Smoke = "Smoke"
     case Haze = "Haze"
+    case haze = "haze"
     case sandDustWhirls = "sand/dust whirls"
     case fog = "fog"
     case sand = "sand"
-    case dust = "dXust"
+    case dust = "dust"
     case volcanicAsh = "volcanic ash"
     case squalls = "squalls"
     case tornado = "tornado"
@@ -160,8 +175,8 @@ struct Daily: Codable, Identifiable {
     let dt, sunrise, sunset, moonrise: Int
     let moonset: Int
     let moonPhase: Double
-    let summary: String
     let temp: Temp
+    let summary: String
     let feelsLike: FeelsLike
     let pressure, humidity: Int
     let dewPoint, windSpeed: Double
@@ -171,19 +186,21 @@ struct Daily: Codable, Identifiable {
     let clouds: Int
     let pop: Double
     let rain: Double?
+    let snow: Double?
     let uvi: Double
 
     enum CodingKeys: String, CodingKey {
-        case dt, sunrise, sunset, moonrise, moonset, summary
+        case dt, sunrise, sunset, moonrise, moonset
         case moonPhase = "moon_phase"
         case temp
+        case summary
         case feelsLike = "feels_like"
         case pressure, humidity
         case dewPoint = "dew_point"
         case windSpeed = "wind_speed"
         case windDeg = "wind_deg"
         case windGust = "wind_gust"
-        case weather, clouds, pop, rain, uvi
+        case weather, clouds, pop, rain, snow, uvi
     }
 }
 
@@ -204,4 +221,17 @@ struct Minutely: Codable {
     let precipitation: Double
 }
 
+// MARK: - Alert
+struct AlertDM: Codable {
+    let senderName: String
+    let event: String
+    let start: Int
+    let end: Int
+    let description: String
+    let tags: [String]
 
+    enum CodingKeys: String, CodingKey {
+        case senderName = "sender_name"
+        case event, start, end, description, tags
+    }
+}

@@ -14,7 +14,7 @@ struct ForecastWeatherView: View {
 
 
     var body: some View {
-        VStack(spacing: 5){
+        VStack(){
             HourlyWeatherView() // Similar to EPLClub Card=
             DailyWeatherView() // Similar to EPLClub Row View
 
@@ -23,7 +23,7 @@ struct ForecastWeatherView: View {
         // add modifiers and image to mirror the design required
     }
 }
-
-#Preview {
-    ForecastWeatherView()
-}
+//
+//#Preview {
+//    ForecastWeatherView()
+//}

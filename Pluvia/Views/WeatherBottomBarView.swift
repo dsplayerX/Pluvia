@@ -5,122 +5,227 @@
 //  Created by Dumindu Sameendra on 2024-12-20.
 //
 
+import SwiftData
 import SwiftUI
 
 struct WeatherStyleBottomBarView: View {
-
     @EnvironmentObject var weatherMapPlaceViewModel: WeatherMapPlaceViewModel
 
     @State private var selectedCityIndex = 0
     @State private var isMapViewPresented = false
     @State private var isListViewPresented = false
 
-    // Dummy city data with weather info
-    let cities = [
-        City(name: "Horana"),
-        City(name: "Kolkata"),
-        City(name: "Washington"),
-        City(name: "Sydney"),
-        City(name: "Paris"),
-        City(name: "Battaramulla")
-    ]
-
     var body: some View {
-        VStack {
-            TabView(selection: $selectedCityIndex) {
-                ForEach(0..<cities.count, id: \.self) { index in
-                    VStack() {
-                        CurrentWeatherView(city: cities[index].name)
-                    }
-                    .tag(index)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                }
+        ZStack {
+            GeometryReader { geometry in
+                Image(dynamicBackgroundImage)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(
+                        width: geometry.size.width, height: geometry.size.height
+                    )
+                    .clipped()
+                    .ignoresSafeArea()
             }
-            .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-            .animation(.easeInOut, value: selectedCityIndex)
-            
-            // Bottom Bar
-            HStack {
-                // Map Button
-                Button(action: {
-                    isMapViewPresented.toggle()
-                }) {
-                    Image(systemName: "map.fill")
-                        .font(.system(size: 24))
-                        .foregroundColor(.white)
-                }
-                .sheet(isPresented: $isMapViewPresented) {
-                    MapView()
-                }
-                .padding(.leading, 20)
 
-                Spacer()
+            VStack {
+                TabView(selection: $selectedCityIndex) {
+                    ForEach(
+                        weatherMapPlaceViewModel.locations.indices, id: \.self
+                    ) { index in
+                        ScrollView(.vertical) {
+                            CurrentWeatherView()
+                                .tag(index)
+                                .frame(
+                                    maxWidth: .infinity, maxHeight: .infinity)
+                        }
+                    }
+                }
+                .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+                .animation(.smooth, value: selectedCityIndex)
+                .onChange(of: selectedCityIndex) { oldValue, newValue in
+                    Task {
+                        do {
+                            weatherMapPlaceViewModel.resetAll()
+                            weatherMapPlaceViewModel.setNewLocation(
+                                weatherMapPlaceViewModel.locations[newValue].name)
+                            let coordinates =
+                                try await weatherMapPlaceViewModel
+                                .getCoordinatesForCity()
+                            try await weatherMapPlaceViewModel.fetchWeatherData(
+                                lat: coordinates.latitude,
+                                lon: coordinates.longitude)
+                            try await weatherMapPlaceViewModel
+                                .fetchAirQualityData(
+                                    lat: coordinates.latitude,
+                                    lon: coordinates.longitude)
+                        } catch {
+                            weatherMapPlaceViewModel.errorMessage =
+                                AlertMessage(
+                                    message: error.localizedDescription)
+                            print("Error: \(error.localizedDescription)")
+                        }
+                    }
+                }
+                .onAppear {
+                    Task {
+                        do {
+                            let coordinates =
+                                try await weatherMapPlaceViewModel
+                                .getCoordinatesForCity()
+                            try await weatherMapPlaceViewModel.fetchWeatherData(
+                                lat: coordinates.latitude,
+                                lon: coordinates.longitude)
+                            try await weatherMapPlaceViewModel
+                                .fetchAirQualityData(
+                                    lat: coordinates.latitude,
+                                    lon: coordinates.longitude)
+                            try await weatherMapPlaceViewModel.setAnnotations()
+                        } catch {
+                            weatherMapPlaceViewModel.errorMessage =
+                                AlertMessage(
+                                    message: error.localizedDescription)
+                            print("Error: \(error.localizedDescription)")
+                        }
+                    }
+                }
 
-                // Dot Indicators
-                HStack(spacing: 8) {
-                    ForEach(0..<cities.count, id: \.self) { index in
-                        Circle()
-                            .frame(width: 8, height: 8)
-                            .foregroundColor(
-                                index == selectedCityIndex ? .white : .gray
-                            )
-                            .onTapGesture {
-                                withAnimation {
-                                    selectedCityIndex = index
+                // Bottom Bar
+                HStack {
+                    // Map Button
+                    Button(action: {
+                        isMapViewPresented.toggle()
+                    }) {
+                        Image(systemName: "map.fill")
+                            .font(.system(size: 24))
+                            .foregroundColor(.white)
+                    }
+                    .sheet(isPresented: $isMapViewPresented) {
+                        MapView()
+                    }
+                    .padding(.leading, 20)
+
+                    Spacer()
+
+                    // Dot Indicators
+                    HStack(spacing: 8) {
+                        ForEach(
+                            weatherMapPlaceViewModel.locations.indices,
+                            id: \.self
+                        ) { index in
+                            Circle()
+                                .frame(width: 8, height: 8)
+                                .foregroundColor(
+                                    index == selectedCityIndex ? .white : .gray
+                                )
+                                .onTapGesture {
+                                    withAnimation {
+                                        selectedCityIndex = index
+                                    }
                                 }
-                            }
+                        }
+                    }
+
+                    Spacer()
+
+                    // List Button
+                    Button(action: {
+                        isListViewPresented.toggle()
+                    }) {
+                        Image(systemName: "list.bullet")
+                            .font(.system(size: 24))
+                            .foregroundColor(.white)
+                    }
+                    .sheet(isPresented: $isListViewPresented) {
+                        VisitedPlacesView()
+                    }
+                    .padding(.trailing, 20)
+                }
+                .padding()
+                .background(.ultraThinMaterial)
+                .padding(.bottom, 10)
+                .padding(.top, -8)
+                .safeAreaPadding(.bottom)
+
+            }
+            .safeAreaPadding(.top)
+            .onChange(of: isListViewPresented) { oldValue, newValue in
+                if !oldValue {
+                    // Refresh locations when the list view is dismissed
+                    weatherMapPlaceViewModel.fetchLocationsData()
+                    selectedCityIndex = 0
+                }
+                Task {
+                    do {
+                        weatherMapPlaceViewModel.resetAll()
+                        weatherMapPlaceViewModel.setNewLocation(
+                            weatherMapPlaceViewModel.locations[selectedCityIndex].name)
+                        let coordinates =
+                            try await weatherMapPlaceViewModel
+                            .getCoordinatesForCity()
+                        try await weatherMapPlaceViewModel.fetchWeatherData(
+                            lat: coordinates.latitude,
+                            lon: coordinates.longitude)
+                        try await weatherMapPlaceViewModel
+                            .fetchAirQualityData(
+                                lat: coordinates.latitude,
+                                lon: coordinates.longitude)
+                    } catch {
+                        weatherMapPlaceViewModel.errorMessage =
+                            AlertMessage(
+                                message: error.localizedDescription)
+                        print("Error: \(error.localizedDescription)")
                     }
                 }
-
-                Spacer()
-
-                // List Button
-                Button(action: {
-                    isListViewPresented.toggle()
-                }) {
-                    Image(systemName: "list.bullet")
-                        .font(.system(size: 24))
-                        .foregroundColor(.white)
-                }
-                .sheet(isPresented: $isListViewPresented) {
-                    VisitedPlacesView(cities: cities)
-                }
-                .padding(.trailing, 20)
             }
-            .padding()
-            .background(Color.gray.opacity(0.5))
-            .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: -2)
-            
-            .ignoresSafeArea()
+        }.ignoresSafeArea()
+    }
+
+    private var dynamicBackgroundImage: String {
+        guard let weatherData = weatherMapPlaceViewModel.weatherDataModel else {
+            return "BG"  // Fallback image
         }
-        .background(Color.blue.opacity(1))
-//        .onAppear {
-//            Task {
-//                do {
-//                    let coordinates =
-//                        try await weatherMapPlaceViewModel.getCoordinatesForCity()
-//                    try await weatherMapPlaceViewModel.fetchWeatherData(
-//                        lat: coordinates.latitude, lon: coordinates.longitude)
-//                    try await weatherMapPlaceViewModel.fetchAirQualityData(
-//                        lat: coordinates.latitude, lon: coordinates.longitude)
-//                } catch {
-//                    weatherMapPlaceViewModel.errorMessage =
-//                        error.localizedDescription
-//                    print("Error: \(error.localizedDescription)")
-//                }
-//            }
-//        }
+
+        let condition = weatherData.current.weather[0].main.rawValue
+            .lowercased()
+        let hour = Calendar.current.component(.hour, from: Date())
+
+        switch condition {
+        case "clear":
+            return hour >= 6 && hour < 18 ? "BG" : "BG"
+        case "clouds":
+            return hour >= 6 && hour < 18 ? "BG" : "BG"
+        case "rain":
+            return "rainy"
+        case "snow":
+            return "snowy"
+        case "thunderstorm":
+            return "stormy"
+        default:
+            return "defaultBackground"
+        }
     }
 }
 
-struct City {
-    let name: String
-}
+#Preview {
+    do {
+        // Create a temporary ModelContainer for preview purposes
+        let container = try ModelContainer(for: LocationModel.self)
 
-struct WeatherStyleBottomBarView_Previews: PreviewProvider {
-    static var previews: some View {
-        WeatherStyleBottomBarView().environmentObject(
-            WeatherMapPlaceViewModel())
-        //   .preferredColorScheme(.dark) // To simulate the iOS Weather app style
+        // Initialize the ViewModel with the model context
+        let viewModel = WeatherMapPlaceViewModel(
+            modelContext: container.mainContext)
+
+        // Mock data for preview
+        viewModel.locations = [
+            LocationModel(name: "London", latitude: 51.5074, longitude: -0.1278)
+        ]
+
+        return WeatherStyleBottomBarView()
+            .environmentObject(viewModel)
+            .modelContainer(container)
+    } catch {
+        fatalError(
+            "Failed to create ModelContainer: \(error.localizedDescription)")
     }
 }

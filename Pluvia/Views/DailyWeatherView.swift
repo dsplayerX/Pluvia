@@ -15,58 +15,41 @@ struct DailyWeatherView: View {
             HStack {
                 Image(systemName: "calendar").foregroundColor(
                     Color.white.opacity(0.7))
-                Text("5-Day Forecast").foregroundColor(
+                Text("7-DAY FORECAST").foregroundColor(
                     Color.white.opacity(0.7)
-                ).font(.system(size: 16))
+                ).font(.system(size: 14))
             }
             Divider().background(Color.white)
             if let weatherData = weatherMapPlaceViewModel.weatherDataModel {
                 forecastListView(weatherData: weatherData)
             } else {
-                HStack{
+                HStack {
                     Text("Loading...")
                         .foregroundColor(.white)
                         .font(.caption)
                     Spacer()
                 }
             }
-        }.padding(10).background(Color.gray.opacity(0.5)).cornerRadius(10)
-            .padding(10)
-            // TODO: Remove, only for testing
-//            .onAppear {
-//                Task {
-//                    do {
-//                        let coordinates =
-//                            try await weatherMapPlaceViewModel
-//                            .getCoordinatesForCity()
-//                        try await weatherMapPlaceViewModel.fetchWeatherData(
-//                            lat: coordinates.latitude,
-//                            lon: coordinates.longitude)
-//                        try await weatherMapPlaceViewModel.fetchAirQualityData(
-//                            lat: coordinates.latitude,
-//                            lon: coordinates.longitude)
-//                    } catch {
-//                        weatherMapPlaceViewModel.errorMessage =
-//                            error.localizedDescription
-//                    }
-//                }
-//            }
+        }.padding(10).background(.ultraThinMaterial).cornerRadius(15)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 2.5)
     }
 
     private func forecastListView(weatherData: WeatherDataModel) -> some View {
-        
+
         let globalMinTemp = weatherData.daily.map { $0.temp.min }.min() ?? 0.0
         let globalMaxTemp = weatherData.daily.map { $0.temp.max }.max() ?? 0.0
-        let currentTemp = weatherData.current.temp // Replace with actual current temp from your model
+        let currentTemp = weatherData.current.temp  // Replace with actual current temp from your model
         return VStack {
-            
+
             ForEach(
-                Array(weatherData.daily.prefix(5).enumerated()),
+                Array(weatherData.daily.prefix(7).enumerated()),
                 id: \.element.id
             ) { index, day in
-                DailyWeatherRowView(index: index, day: day, globalMinTemp: globalMinTemp,
-                                    globalMaxTemp: globalMaxTemp,
-                                    currentTemp: currentTemp)
+                DailyWeatherRowView(
+                    index: index, day: day, globalMinTemp: globalMinTemp,
+                    globalMaxTemp: globalMaxTemp,
+                    currentTemp: currentTemp)
             }
         }
     }
@@ -92,10 +75,12 @@ struct DailyWeatherRowView: View {
                         for: day.weather.first?.id ?? 800)
                 )
                 .foregroundColor(.white)
-                .font(.title2)
-                Text("\(Int(day.pop * 100))%")
-                    .foregroundColor(.blue)
-                    .font(.caption)
+                .font(.system(size: 20))
+                if day.pop > 0 {
+                    Text("\(Int(day.pop * 100))%")
+                        .foregroundColor(.cyan)
+                        .font(.system(size: 12))
+                }
             }
             Spacer()
 
@@ -105,17 +90,15 @@ struct DailyWeatherRowView: View {
                 .font(.caption)
 
             TempBarView(
-                            index: index,
-                            minTemp: Int(day.temp.min),
-                            maxTemp: Int(day.temp.max),
-                            globalMinTemp: Int(globalMinTemp),
-                            globalMaxTemp: Int(globalMaxTemp),
-                            currentTemp: Int(
-                                index == 0 ? currentTemp : (
-                                    day.temp.min + day.temp.max
-                                ) / 2
-                            )
-                        )
+                index: index,
+                minTemp: Int(day.temp.min),
+                maxTemp: Int(day.temp.max),
+                globalMinTemp: Int(globalMinTemp),
+                globalMaxTemp: Int(globalMaxTemp),
+                currentTemp: Int(
+                    index == 0 ? currentTemp : (day.temp.min + day.temp.max) / 2
+                )
+            )
             .frame(height: 5)
             .padding(.horizontal, 5)
 
@@ -164,7 +147,7 @@ struct TempBarView: View {
     let maxTemp: Int
     let globalMinTemp: Int
     let globalMaxTemp: Int
-    let currentTemp: Int // Pass the current temperature dynamically
+    let currentTemp: Int  // Pass the current temperature dynamically
 
     var body: some View {
         GeometryReader { geometry in
@@ -180,10 +163,12 @@ struct TempBarView: View {
                 .mask(
                     Rectangle()
                         .frame(
-                            width: geometry.size.width * CGFloat(croppedWidthRatio),
+                            width: geometry.size.width
+                                * CGFloat(croppedWidthRatio),
                             alignment: .leading
                         )
-                        .offset(x: geometry.size.width * CGFloat(startOffsetRatio))
+                        .offset(
+                            x: geometry.size.width * CGFloat(startOffsetRatio))
                 )
 
                 // Dot for Current Temperature (only for "Today")
@@ -191,7 +176,9 @@ struct TempBarView: View {
                     Circle()
                         .fill(Color.white)
                         .frame(width: 10, height: 10)
-                        .offset(x: geometry.size.width * CGFloat(dotPosition) - geometry.size.width / 2)
+                        .offset(
+                            x: geometry.size.width * CGFloat(dotPosition)
+                                - geometry.size.width / 2)
                 }
             }
         }
@@ -219,6 +206,6 @@ struct TempBarView: View {
     }
 }
 
-#Preview {
-    DailyWeatherView().environmentObject(WeatherMapPlaceViewModel())
-}
+//#Preview {
+//    DailyWeatherView().environmentObject(WeatherMapPlaceViewModel())
+//}

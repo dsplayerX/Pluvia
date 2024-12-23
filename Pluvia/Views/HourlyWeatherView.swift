@@ -5,6 +5,7 @@
 //  Created by girish lukka on 23/10/2024.
 //
 
+import SwiftData
 import SwiftUI
 
 struct HourlyWeatherView: View {
@@ -17,97 +18,128 @@ struct HourlyWeatherView: View {
             if let weatherData = weatherMapPlaceViewModel.weatherDataModel {
                 Text(weatherData.daily[0].summary)
                     .foregroundColor(.white)
-                    .font(.caption)
+                    .font(.system(size: 14)).padding(.vertical, 5)
 
                 Divider().background(Color.white)
 
                 HourlyWeatherListView(weatherData: weatherData)
             } else {
-                HStack{
+                HStack(alignment: .top) {
                     Text("Loading...")
                         .foregroundColor(.white)
-                        .font(.caption)
+                        .font(.system(size: 14))
                     Spacer()
                 }
             }
         }
+        .frame(minHeight: 150)
         .padding(10)
-        .background(Color.gray.opacity(0.6))
-        .cornerRadius(10)
-        .padding(10)
-        // TODO: remove, only for testing
-//        .onAppear {
-//            Task {
-//                do {
-//                    let coordinates =
-//                        try await weatherMapPlaceViewModel.getCoordinatesForCity()
-//                    try await weatherMapPlaceViewModel.fetchWeatherData(
-//                        lat: coordinates.latitude, lon: coordinates.longitude)
-//                    try await weatherMapPlaceViewModel.fetchAirQualityData(
-//                        lat: coordinates.latitude, lon: coordinates.longitude)
-//                } catch {
-//                    weatherMapPlaceViewModel.errorMessage =
-//                        error.localizedDescription
-//                }
-//            }
-//        }
+        .background(.ultraThinMaterial)
+        .cornerRadius(15)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 2.5)
     }
-}
-#Preview {
-    HourlyWeatherView().environmentObject(WeatherMapPlaceViewModel())
-
 }
 
 struct HourlyWeatherListView: View {
     var weatherData: WeatherDataModel
-    
+
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 20) {
+            HStack(alignment: .top, spacing: 20) {
                 ForEach(weatherData.hourly, id: \.id) { hour in
-                    VStack {
+                    VStack(alignment: .center) {
                         Text(
-                            DateFormatterUtils.formattedDate12Hour(
+                            DateFormatterUtils.formattedDate24Hour(
                                 from: TimeInterval(hour.dt),
-                                timeZone: TimeZone(identifier: weatherData.timezone) ?? .current
+                                timeZone: TimeZone(
+                                    identifier: weatherData.timezone)
+                                    ?? .current
                             )
                         )
                         .foregroundColor(.white)
-                        .font(.caption)
-                        
-                        Image(
-                            systemName: mapWeatherIcon(
-                                for: hour.weather.first?.id ?? 800)
+                        .font(.system(size: 14)).fontWeight(.medium).padding(
+                            .top, 5
+                        ).padding(.bottom, 10)
+
+                        Spacer()
+
+                        HourlyWeatherIconView(
+                                conditionID: hour.weather.first?.id ?? 800,
+                                dt: hour.dt,
+                                timezone: weatherData.timezone,
+                                pop: hour.pop
                         )
-                        .foregroundColor(.white)
-                        .font(.title2)
-                        
+                            
                         Text("\(Int(hour.temp))°")
                             .foregroundColor(.white)
-                            .font(.caption)
+                            .font(.system(size: 20)).fontWeight(.medium)
+                            .padding(.bottom, 5)
                     }
                 }
             }
         }
     }
+
+}
+
+struct HourlyWeatherIconView: View {
+    let conditionID: Int
+    let dt: Int
+    let timezone: String
+    let pop: Double?
     
-    // Map weather condition IDs to system icons
-    func mapWeatherIcon(for conditionID: Int) -> String {
+    var body: some View {
+        VStack {
+            Image(
+                systemName: mapWeatherIcon(
+                    for: conditionID,
+                    dt: dt,
+                    timezone: timezone
+                )
+            )
+            .resizable()
+            .scaledToFit()
+            .frame(height: 16)
+            .foregroundColor(.white)
+            .padding(.bottom, 0)
+            
+            if let pop = pop, pop > 0 {
+                Text("\(Int(pop * 100))%")
+                    .foregroundColor(.cyan)
+                    .font(.system(size: 10))
+            }
+        }.frame(height: 50)
+        .frame(maxWidth: .infinity)
+    }
+    
+    // Maps the weather condition ID to an SF Symbol name based on day/night
+    private func mapWeatherIcon(for conditionID: Int, dt: Int, timezone: String) -> String {
+        let date = Date(timeIntervalSince1970: TimeInterval(dt))
+        let formatter = DateFormatter()
+        formatter.timeZone = TimeZone(identifier: timezone) ?? .current
+        formatter.dateFormat = "HH"
+        let hour = Int(formatter.string(from: date)) ?? 0
+        let isDay = (hour >= 6 && hour < 18)
+
         switch conditionID {
         case 200...232:
-            return "cloud.bolt.rain.fill"  // Thunderstorm
+            return "cloud.bolt.fill" // Thunderstorm
         case 300...321:
-            return "cloud.drizzle.fill"  // Drizzle
+            return isDay
+                ? "cloud.sun.drizzle.fill" : "cloud.moon.drizzle.fill"  // Drizzle
         case 500...531:
             return "cloud.rain.fill"  // Rain
         case 600...622:
             return "cloud.snow.fill"  // Snow
         case 701...781:
-            return "cloud.fog.fill"  // Atmosphere
+            return isDay ? "cloud.sun.fog.fill" : "cloud.moon.fog.fill"  // Atmosphere
         case 800:
-            return "sun.max.fill"  // Clear
-        case 801...804:
-            return "cloud.fill"  // Clouds
+            return isDay ? "sun.max.fill" : "moon.fill"  // Clear sky
+        case 801:
+            return isDay ? "cloud.sun.fill" : "cloud.moon.fill"  // Few clouds
+        case 802...804:
+            return "cloud.fill"  // Overcast
         default:
             return "questionmark"  // Unknown
         }
