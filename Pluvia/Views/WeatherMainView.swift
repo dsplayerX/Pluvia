@@ -10,7 +10,6 @@ import SwiftUI
 
 struct WeatherMainView: View {
     @EnvironmentObject var weatherMapPlaceViewModel: WeatherMapPlaceViewModel
-    @Environment(\.colorScheme) var colorScheme
 
     @State private var selectedCityIndex = 0
     @State private var isMapViewPresented = false
@@ -29,8 +28,9 @@ struct WeatherMainView: View {
                     .clipped()
                     .ignoresSafeArea()
                     .transition(
-                            .opacity.combined(with: .scale(scale: 1.05, anchor: .center))
-                        )
+                        .opacity.combined(
+                            with: .scale(scale: 1.05, anchor: .center))
+                    )
                     .animation(
                         .easeInOut(duration: 0.5),
                         value: backgroundImage
@@ -39,11 +39,28 @@ struct WeatherMainView: View {
 
             VStack {
                 if weatherMapPlaceViewModel.locations.isEmpty {
-                    Text("No locations added. Add a location to view weather data.")
-                        .foregroundColor(.white)
-                        .font(.system(size: 24)).padding(.top, 100).padding(10)
-                }
+                    Spacer()
+                        VStack {
+                            Text("No locations added!")
+                                .font(.system(size: 24))
+                                .padding(5)
+                                .shadow(radius: 2.5)
+                            Text("Add a location to view weather data.")
+                                .font(.system(size: 20))
+                                .padding(5)
+                                .shadow(radius: 2.5)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .center)
                     
+                    .multilineTextAlignment(.center)
+                        .foregroundColor(.white)
+                        .background(.ultraThinMaterial.opacity(0.5))
+                        .cornerRadius(10)
+                        .padding(.horizontal, 60)
+                        .padding(.top, 150)
+                        Spacer()
+                }
+
                 TabView(selection: $selectedCityIndex) {
                     ForEach(
                         weatherMapPlaceViewModel.locations.indices, id: \.self
@@ -77,8 +94,10 @@ struct WeatherMainView: View {
                                     lon: coordinates.longitude)
                             updateBackgroundImage(
                                 conditionID:
-                                    Int(weatherMapPlaceViewModel.weatherDataModel?.current
-                                        .weather[0].id ?? 0))
+                                    Int(
+                                        weatherMapPlaceViewModel
+                                            .weatherDataModel?.current
+                                            .weather[0].id ?? 0))
                             try await weatherMapPlaceViewModel
                                 .fetchTouristAttractions()
                         } catch {
@@ -92,6 +111,7 @@ struct WeatherMainView: View {
                 .onAppear {
                     Task {
                         do {
+                            weatherMapPlaceViewModel.fetchLocationsData()
                             let coordinates =
                                 try await weatherMapPlaceViewModel
                                 .getCoordinatesForCity()
@@ -104,8 +124,10 @@ struct WeatherMainView: View {
                                     lon: coordinates.longitude)
                             updateBackgroundImage(
                                 conditionID:
-                                    Int(weatherMapPlaceViewModel.weatherDataModel?.current
-                                        .weather[0].id ?? 0))
+                                    Int(
+                                        weatherMapPlaceViewModel
+                                            .weatherDataModel?.current
+                                            .weather[0].id ?? 0))
                             try await weatherMapPlaceViewModel
                                 .fetchTouristAttractions()
                         } catch {
@@ -129,10 +151,14 @@ struct WeatherMainView: View {
                     }
                     .sheet(isPresented: $isMapViewPresented) {
                         MapView(
-                            places: weatherMapPlaceViewModel.touristAttractionPlaces, selectedLocation: weatherMapPlaceViewModel.currentLocation
+                            places: weatherMapPlaceViewModel
+                                .touristAttractionPlaces,
+                            selectedLocation: weatherMapPlaceViewModel
+                                .currentLocation
                         )
                         .presentationDetents([.medium, .large])
-                        .presentationDragIndicator(.visible) .presentationBackground(.ultraThinMaterial)
+                        .presentationDragIndicator(.visible)
+                        .presentationBackground(.ultraThinMaterial)
                     }
                     .padding(.leading, 20)
 
@@ -170,7 +196,8 @@ struct WeatherMainView: View {
                     .sheet(isPresented: $isListViewPresented) {
                         VisitedPlacesView()
                             .presentationDetents([.medium, .large])
-                            .presentationDragIndicator(.visible).presentationBackground(.ultraThinMaterial)
+                            .presentationDragIndicator(.visible)
+                            .presentationBackground(.ultraThinMaterial)
                     }
                     .padding(.trailing, 20)
                 }
@@ -182,33 +209,44 @@ struct WeatherMainView: View {
 
             }
             .safeAreaPadding(.top)
-            .onChange(of: weatherMapPlaceViewModel.locations) { oldLocation, newLocations in
+            .onChange(of: weatherMapPlaceViewModel.locations) {
+                oldLocation, newLocations in
                 if !newLocations.isEmpty {
-                    selectedCityIndex = 0 // Reset to the first city
+                    selectedCityIndex = 0  // Reset to the first city
                     Task {
                         do {
                             weatherMapPlaceViewModel.resetAll()
+                            weatherMapPlaceViewModel.fetchLocationsData()
                             weatherMapPlaceViewModel.setNewLocation(
-                                weatherMapPlaceViewModel.locations[selectedCityIndex].name
+                                weatherMapPlaceViewModel.locations[
+                                    selectedCityIndex
+                                ].name
                             )
-                            let coordinates = try await weatherMapPlaceViewModel.getCoordinatesForCity()
+                            let coordinates =
+                                try await weatherMapPlaceViewModel
+                                .getCoordinatesForCity()
                             try await weatherMapPlaceViewModel.fetchWeatherData(
                                 lat: coordinates.latitude,
                                 lon: coordinates.longitude
                             )
-                            try await weatherMapPlaceViewModel.fetchAirQualityData(
-                                lat: coordinates.latitude,
-                                lon: coordinates.longitude
-                            )
+                            try await weatherMapPlaceViewModel
+                                .fetchAirQualityData(
+                                    lat: coordinates.latitude,
+                                    lon: coordinates.longitude
+                                )
                             updateBackgroundImage(
                                 conditionID:
-                                    Int(weatherMapPlaceViewModel.weatherDataModel?.current
-                                        .weather[0].id ?? 0))
-                            try await weatherMapPlaceViewModel.fetchTouristAttractions()
+                                    Int(
+                                        weatherMapPlaceViewModel
+                                            .weatherDataModel?.current
+                                            .weather[0].id ?? 0))
+                            try await weatherMapPlaceViewModel
+                                .fetchTouristAttractions()
                         } catch {
-                            weatherMapPlaceViewModel.errorMessage = AlertMessage(
-                                message: error.localizedDescription
-                            )
+                            weatherMapPlaceViewModel.errorMessage =
+                                AlertMessage(
+                                    message: error.localizedDescription
+                                )
                             print("Error: \(error.localizedDescription)")
                         }
                     }

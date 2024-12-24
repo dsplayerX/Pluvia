@@ -31,13 +31,18 @@ struct MapView: View {
                 // Main Content
                 VStack(alignment: .leading) {
                     Text(
-                        "Tourist Attractions near \(selectedLocation.capitalized)"
+                        "Tourist Attractions"
                     )
                         .font(.largeTitle)
                         .fontWeight(.bold)
                         .foregroundColor(.white)
                         .padding(.horizontal, 20)
                         .padding(.top, 20)
+                    Text("near \(selectedLocation.capitalized)")
+                        .font(.system(size: 20))
+                        .fontWeight(.medium)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 25)
                 }.frame(maxWidth: .infinity, alignment: .leading)
                 // Map showing the tourist places as pins
 //                if region != nil {

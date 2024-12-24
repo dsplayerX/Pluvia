@@ -234,13 +234,10 @@ class WeatherMapPlaceViewModel: ObservableObject {
             latitudinalMeters: 5000,
             longitudinalMeters: 5000
         )
-        print("Fetching tourist attractions for: \(currentLocation)")
-        print("Request: \(request.region)")
         
         let search = MKLocalSearch(request: request)
         let response = try await search.start()
         
-        print("Response: \(response.mapItems.count)")
         // Map the search results to PlaceAnnotationDataModel
         let places = response.mapItems.map { mapItem in
             PlaceAnnotationDataModel(
@@ -255,6 +252,7 @@ class WeatherMapPlaceViewModel: ObservableObject {
         }
     }
     
+    /// Resets all the data models and tourist places.
     func resetAll() {
         weatherDataModel = nil
         airDataModel = nil
