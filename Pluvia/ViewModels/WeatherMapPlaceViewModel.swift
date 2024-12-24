@@ -19,11 +19,10 @@ class WeatherMapPlaceViewModel: ObservableObject {
      */
     var modelContext: ModelContext
     @Published var locations: [LocationModel] = [] // List of saved locations
-    
     @Published var weatherDataModel: WeatherDataModel?  // Holds weather data for the current location
     @Published var airDataModel: AirDataModel?  // Holds air quality data for the current location
     @Published var currentLocation = ""  // City name to fetch weather
-    @Published var annotations: [MKPointAnnotation] = []  // Annotations for tourist places
+    @Published var touristAttractionPlaces: [PlaceAnnotationDataModel] = []  // Annotations for tourist places
     @Published var errorMessage: AlertMessage? = nil
     
     private let apiKey = ""
@@ -171,6 +170,7 @@ class WeatherMapPlaceViewModel: ObservableObject {
     /// - Parameters:
     ///   - lat: Latitude of the location.
     ///   - lon: Longitude of the location.
+    @MainActor
     func fetchWeatherData(lat: Double, lon: Double) async throws {
 //        print("Fetching weather data for lat: \(lat), lon: \(lon)")
         let urlString =
@@ -195,6 +195,7 @@ class WeatherMapPlaceViewModel: ObservableObject {
     /// - Parameters:
     ///   - lat: Latitude of the location.
     ///   - lon: Longitude of the location.
+    @MainActor
     func fetchAirQualityData(lat: Double, lon: Double) async throws {
 //        print("Fetching air quality data for lat: \(lat), lon: \(lon)")
         let urlString =
@@ -216,40 +217,48 @@ class WeatherMapPlaceViewModel: ObservableObject {
 
     // MARK: - Set Tourist Place Annotations
     /// Fetches and sets annotations for top tourist attractions using MapKit.
-    func setAnnotations() async throws {
-        guard let location = try? await getCoordinatesForCity() else {
+    @MainActor
+    func fetchTouristAttractions() async throws {
+        guard !currentLocation.isEmpty else {
             throw NSError(
                 domain: "LocationError", code: 400,
                 userInfo: [
-                    NSLocalizedDescriptionKey:
-                        "Unable to fetch coordinates for the current location."
+                    NSLocalizedDescriptionKey: "Current location is not set."
                 ])
         }
 
         let request = MKLocalSearch.Request()
-        request.naturalLanguageQuery = "Tourist Attractions"
+        request.naturalLanguageQuery = "tourist attractions"
         request.region = MKCoordinateRegion(
-            center: location,
-            span: MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.1)
+            center: try await getCoordinatesForCity(),
+            latitudinalMeters: 5000,
+            longitudinalMeters: 5000
         )
-
+        print("Fetching tourist attractions for: \(currentLocation)")
+        print("Request: \(request.region)")
+        
         let search = MKLocalSearch(request: request)
         let response = try await search.start()
-
+        
+        print("Response: \(response.mapItems.count)")
+        // Map the search results to PlaceAnnotationDataModel
+        let places = response.mapItems.map { mapItem in
+            PlaceAnnotationDataModel(
+                name: mapItem.name ?? "Unknown",
+                latitude: mapItem.placemark.coordinate.latitude,
+                longitude: mapItem.placemark.coordinate.longitude
+            )
+        }
+        
         DispatchQueue.main.async {
-            self.annotations = response.mapItems.compactMap { item in
-                let annotation = MKPointAnnotation()
-                annotation.title = item.name
-                annotation.coordinate = item.placemark.coordinate
-                return annotation
-            }
+            self.touristAttractionPlaces = places
         }
     }
     
     func resetAll() {
         weatherDataModel = nil
         airDataModel = nil
-        annotations = []
+        touristAttractionPlaces = []
     }
 }
 

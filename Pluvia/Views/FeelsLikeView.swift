@@ -35,7 +35,7 @@ struct FeelsLikeView: View {
 
             VStack(alignment: .leading) {
                 HStack {
-                    Image(systemName: "thermometer")  // Thermometer icon
+                    Image(systemName: "thermometer")
                         .font(.system(size: 14))
                         .foregroundColor(Color.white.opacity(0.7))
 
@@ -64,6 +64,5 @@ struct FeelsLikeView: View {
 
 #Preview {
     FeelsLikeView(feelsLikeTemp: 29, currentTemp: 30)
-        .previewLayout(.sizeThatFits)
         .padding()
 }

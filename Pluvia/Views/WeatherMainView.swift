@@ -15,11 +15,12 @@ struct WeatherMainView: View {
     @State private var selectedCityIndex = 0
     @State private var isMapViewPresented = false
     @State private var isListViewPresented = false
+    @State private var backgroundImage: String = "default_day_bg"
 
     var body: some View {
         ZStack {
             GeometryReader { geometry in
-                Image(dynamicBackgroundImage)
+                Image(backgroundImage)
                     .resizable()
                     .scaledToFill()
                     .frame(
@@ -27,9 +28,22 @@ struct WeatherMainView: View {
                     )
                     .clipped()
                     .ignoresSafeArea()
+                    .transition(
+                            .opacity.combined(with: .scale(scale: 1.05, anchor: .center))
+                        )
+                    .animation(
+                        .easeInOut(duration: 0.5),
+                        value: backgroundImage
+                    )
             }
 
             VStack {
+                if weatherMapPlaceViewModel.locations.isEmpty {
+                    Text("No locations added. Add a location to view weather data.")
+                        .foregroundColor(.white)
+                        .font(.system(size: 24)).padding(.top, 100).padding(10)
+                }
+                    
                 TabView(selection: $selectedCityIndex) {
                     ForEach(
                         weatherMapPlaceViewModel.locations.indices, id: \.self
@@ -61,6 +75,12 @@ struct WeatherMainView: View {
                                 .fetchAirQualityData(
                                     lat: coordinates.latitude,
                                     lon: coordinates.longitude)
+                            updateBackgroundImage(
+                                conditionID:
+                                    Int(weatherMapPlaceViewModel.weatherDataModel?.current
+                                        .weather[0].id ?? 0))
+                            try await weatherMapPlaceViewModel
+                                .fetchTouristAttractions()
                         } catch {
                             weatherMapPlaceViewModel.errorMessage =
                                 AlertMessage(
@@ -82,7 +102,12 @@ struct WeatherMainView: View {
                                 .fetchAirQualityData(
                                     lat: coordinates.latitude,
                                     lon: coordinates.longitude)
-                            try await weatherMapPlaceViewModel.setAnnotations()
+                            updateBackgroundImage(
+                                conditionID:
+                                    Int(weatherMapPlaceViewModel.weatherDataModel?.current
+                                        .weather[0].id ?? 0))
+                            try await weatherMapPlaceViewModel
+                                .fetchTouristAttractions()
                         } catch {
                             weatherMapPlaceViewModel.errorMessage =
                                 AlertMessage(
@@ -103,7 +128,11 @@ struct WeatherMainView: View {
                             .foregroundColor(.white)
                     }
                     .sheet(isPresented: $isMapViewPresented) {
-                        MapView()
+                        MapView(
+                            places: weatherMapPlaceViewModel.touristAttractionPlaces, selectedLocation: weatherMapPlaceViewModel.currentLocation
+                        )
+                        .presentationDetents([.medium, .large])
+                        .presentationDragIndicator(.visible) .presentationBackground(.ultraThinMaterial)
                     }
                     .padding(.leading, 20)
 
@@ -140,6 +169,8 @@ struct WeatherMainView: View {
                     }
                     .sheet(isPresented: $isListViewPresented) {
                         VisitedPlacesView()
+                            .presentationDetents([.medium, .large])
+                            .presentationDragIndicator(.visible).presentationBackground(.ultraThinMaterial)
                     }
                     .padding(.trailing, 20)
                 }
@@ -151,93 +182,89 @@ struct WeatherMainView: View {
 
             }
             .safeAreaPadding(.top)
-            .onChange(of: isListViewPresented) { oldValue, newValue in
-                if !oldValue {
-                    // Refresh locations when the list view is dismissed
-                    weatherMapPlaceViewModel.fetchLocationsData()
-                    selectedCityIndex = 0
-                }
-                Task {
-                    do {
-                        weatherMapPlaceViewModel.resetAll()
-                        weatherMapPlaceViewModel.setNewLocation(
-                            weatherMapPlaceViewModel.locations[
-                                selectedCityIndex
-                            ].name)
-                        let coordinates =
-                            try await weatherMapPlaceViewModel
-                            .getCoordinatesForCity()
-                        try await weatherMapPlaceViewModel.fetchWeatherData(
-                            lat: coordinates.latitude,
-                            lon: coordinates.longitude)
-                        try await weatherMapPlaceViewModel
-                            .fetchAirQualityData(
+            .onChange(of: weatherMapPlaceViewModel.locations) { oldLocation, newLocations in
+                if !newLocations.isEmpty {
+                    selectedCityIndex = 0 // Reset to the first city
+                    Task {
+                        do {
+                            weatherMapPlaceViewModel.resetAll()
+                            weatherMapPlaceViewModel.setNewLocation(
+                                weatherMapPlaceViewModel.locations[selectedCityIndex].name
+                            )
+                            let coordinates = try await weatherMapPlaceViewModel.getCoordinatesForCity()
+                            try await weatherMapPlaceViewModel.fetchWeatherData(
                                 lat: coordinates.latitude,
-                                lon: coordinates.longitude)
-                    } catch {
-                        weatherMapPlaceViewModel.errorMessage =
-                            AlertMessage(
-                                message: error.localizedDescription)
-                        print("Error: \(error.localizedDescription)")
+                                lon: coordinates.longitude
+                            )
+                            try await weatherMapPlaceViewModel.fetchAirQualityData(
+                                lat: coordinates.latitude,
+                                lon: coordinates.longitude
+                            )
+                            updateBackgroundImage(
+                                conditionID:
+                                    Int(weatherMapPlaceViewModel.weatherDataModel?.current
+                                        .weather[0].id ?? 0))
+                            try await weatherMapPlaceViewModel.fetchTouristAttractions()
+                        } catch {
+                            weatherMapPlaceViewModel.errorMessage = AlertMessage(
+                                message: error.localizedDescription
+                            )
+                            print("Error: \(error.localizedDescription)")
+                        }
                     }
                 }
             }
         }.ignoresSafeArea()
     }
 
-    private var dynamicBackgroundImage: String {
-        guard let weatherData = weatherMapPlaceViewModel.weatherDataModel else {
-            return colorScheme == .dark ? "default_night_bg" : "default_day_bg"  // Fallback default image
-        }
-
-        let conditionID = weatherData.current.weather[0].id
+    private func updateBackgroundImage(conditionID: Int) {
         let hour = Calendar.current.component(.hour, from: Date())
         let isDay = hour >= 6 && hour < 18
 
         switch conditionID {
         // Group 2xx: Thunderstorm
         case 200...232:
-            return "thunderstorm_bg"
+            backgroundImage = "thunderstorm_bg"
 
         // Group 3xx: Drizzle
         case 300...321:
-            return "drizzle_bg"
+            backgroundImage = "drizzle_bg"
 
         // Group 5xx: Rain
         case 500...504, 520...531:
-            return "rain_bg"
+            backgroundImage = "rain_bg"
         case 511:
-            return "snow_bg"  // Snow
+            backgroundImage = "snow_bg"  // Snow
 
         // Group 6xx: Snow
         case 600...622:
-            return "snow_bg"
+            backgroundImage = "snow_bg"
 
         // Group 7xx: Atmosphere
         case 701:
-            return "mist_bg"
+            backgroundImage = "mist_bg"
         case 711:
-            return "smoke_bg"
+            backgroundImage = "smoke_bg"
         case 721:
-            return "haze_bg"
+            backgroundImage = "haze_bg"
         case 741:
-            return "fog_bg"
+            backgroundImage = "fog_bg"
         case 781:
-            return "tornado_bg"
+            backgroundImage = "tornado_bg"
 
         // Group 800: Clear
         case 800:
-            return isDay ? "clear_day_bg" : "clear_night_bg"
+            backgroundImage = isDay ? "clear_day_bg" : "clear_night_bg"
 
         // Group 80x: Clouds
         case 801:
-            return isDay ? "cloudy_day_bg" : "cloudy_night_bg"
+            backgroundImage = isDay ? "cloudy_day_bg" : "cloudy_night_bg"
         case 802...804:
-            return isDay ? "cloudy_day_bg" : "cloudy_night_bg"
+            backgroundImage = isDay ? "cloudy_day_bg" : "cloudy_night_bg"
 
         // Default case
         default:
-            return isDay ? "default_day_bg" : "default_night_bg"
+            backgroundImage = isDay ? "default_day_bg" : "default_night_bg"
         }
     }
 }
