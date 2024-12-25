@@ -14,8 +14,8 @@ struct HourlyWeatherView: View {
     @EnvironmentObject var weatherMapPlaceViewModel: WeatherMapPlaceViewModel
 
     var body: some View {
-        VStack(alignment: .leading) {
-            if let weatherData = weatherMapPlaceViewModel.weatherDataModel {
+        if let weatherData = weatherMapPlaceViewModel.weatherDataModel {
+            VStack(alignment: .leading) {
                 Text(weatherData.daily[0].summary)
                     .foregroundColor(.white)
                     .font(.system(size: 14)).padding(.vertical, 5)
@@ -23,21 +23,14 @@ struct HourlyWeatherView: View {
                 Divider().background(Color.white)
 
                 HourlyWeatherListView(weatherData: weatherData)
-            } else {
-                HStack(alignment: .top) {
-                    Text("Loading...")
-                        .foregroundColor(.white)
-                        .font(.system(size: 14))
-                    Spacer()
-                }
             }
+            .frame(minHeight: 150)
+            .padding(10)
+            .background(.ultraThinMaterial)
+            .cornerRadius(15)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 2.5)
         }
-        .frame(minHeight: 150)
-        .padding(10)
-        .background(.ultraThinMaterial)
-        .cornerRadius(15)
-        .padding(.horizontal, 20)
-        .padding(.vertical, 2.5)
     }
 }
 

@@ -15,7 +15,7 @@ struct WeatherMainView: View {
     @State private var isMapViewPresented = false
     @State private var isListViewPresented = false
     @State private var backgroundImage: String = "default_day_bg"
-    @State private var backgroundColor: Color = .white // Dynamic background color
+    @State private var bgImageColor: Color = .black // Dynamic background color
 
     var body: some View {
         ZStack {
@@ -157,11 +157,11 @@ struct WeatherMainView: View {
                             places: weatherMapPlaceViewModel
                                 .touristAttractionPlaces,
                             selectedLocation: weatherMapPlaceViewModel
-                                .currentLocation, backgroundColor: $backgroundColor
+                                .currentLocation, bgImageColor: $bgImageColor
                         )
-                            .presentationDetents([.fraction(0.60), .large])
+                        .presentationDetents([.fraction(0.70), .large])
                         .presentationDragIndicator(.visible)
-                        .background(backgroundColor.opacity(0.3))
+                        .background(bgImageColor.opacity(0.3))
                         .presentationBackground(.ultraThinMaterial)
                     }
                     .padding(.leading, 20)
@@ -198,9 +198,9 @@ struct WeatherMainView: View {
                             .foregroundColor(.white)
                     }
                     .sheet(isPresented: $isListViewPresented) {
-                        VisitedPlacesView()
-                            .background(backgroundColor.opacity(0.3))
-                            .presentationDetents([.medium, .large])
+                        VisitedPlacesView(bgImageColor: $bgImageColor)
+                            .background(bgImageColor.opacity(0.3))
+                            .presentationDetents([.fraction(0.70), .large])
                             .presentationDragIndicator(.visible)
                             .presentationBackground(.ultraThinMaterial)
                     }
@@ -316,10 +316,10 @@ struct WeatherMainView: View {
         private func extractBackgroundColor() {
             guard let uiImage = UIImage(named: backgroundImage),
                   let uiColor = uiImage.averageColor() else {
-                backgroundColor = .white // Default color if extraction fails
+                bgImageColor = .black // Default color if extraction fails
                 return
             }
-            backgroundColor = Color(uiColor: uiColor)
+            bgImageColor = Color(uiColor: uiColor)
         }
 }
 

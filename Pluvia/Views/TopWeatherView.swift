@@ -14,7 +14,6 @@ struct TopWeatherView: View {
     var body: some View {
         VStack(alignment: .center, spacing: 5) {
             if let weatherData = weatherMapPlaceViewModel.weatherDataModel {
-                
                 // Location
                 Text(weatherMapPlaceViewModel.currentLocation.capitalized)
                 .foregroundColor(.white)
@@ -47,10 +46,19 @@ struct TopWeatherView: View {
                 .fontWeight(.medium).shadow(radius: 10).padding(.top, -5)
                 
             } else {
-                ProgressView("").foregroundColor(.white)
-                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                    .scaleEffect(3)
-                    .shadow(radius: 10).padding(.top, 100)
+                // Location
+                Text(weatherMapPlaceViewModel.currentLocation.capitalized)
+                .foregroundColor(.white)
+                .font(.system(size: 32))
+                .shadow(radius: 10)
+            
+                // Loading current temp
+                Text(
+                    "--°"
+                )
+                .foregroundColor(.white)
+                .font(.system(size: 100))
+                .fontWeight(.thin).shadow(radius: 10)
             }
         }
         .padding()

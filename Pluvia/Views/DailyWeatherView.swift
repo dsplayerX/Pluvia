@@ -11,28 +11,23 @@ struct DailyWeatherView: View {
     @EnvironmentObject var weatherMapPlaceViewModel: WeatherMapPlaceViewModel
 
     var body: some View {
-        VStack(alignment: .leading) {
-            HStack {
-                Image(systemName: "calendar").foregroundColor(
-                    Color.white.opacity(0.7))
-                Text("7-DAY FORECAST").foregroundColor(
-                    Color.white.opacity(0.7)
-                ).font(.system(size: 14))
-            }
-            Divider().background(Color.white)
-            if let weatherData = weatherMapPlaceViewModel.weatherDataModel {
-                forecastListView(weatherData: weatherData)
-            } else {
+
+        if let weatherData = weatherMapPlaceViewModel.weatherDataModel {
+            VStack(alignment: .leading) {
                 HStack {
-                    Text("Loading...")
-                        .foregroundColor(.white)
-                        .font(.caption)
-                    Spacer()
+                    Image(systemName: "calendar").foregroundColor(
+                        Color.white.opacity(0.7))
+                    Text("7-DAY FORECAST").foregroundColor(
+                        Color.white.opacity(0.7)
+                    ).font(.system(size: 14))
                 }
-            }
-        }.padding(10).background(.ultraThinMaterial).cornerRadius(15)
-            .padding(.horizontal, 20)
-            .padding(.vertical, 2.5)
+                Divider().background(Color.white)
+                forecastListView(weatherData: weatherData)
+
+            }.padding(10).background(.ultraThinMaterial).cornerRadius(15)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 2.5)
+        }
     }
 
     private func forecastListView(weatherData: WeatherDataModel) -> some View {
@@ -47,7 +42,8 @@ struct DailyWeatherView: View {
                 id: \.element.id
             ) { index, day in
                 DailyWeatherRowView(
-                    index: index, day: day, timezone:weatherData.timezone, globalMinTemp: globalMinTemp,
+                    index: index, day: day, timezone: weatherData.timezone,
+                    globalMinTemp: globalMinTemp,
                     globalMaxTemp: globalMaxTemp,
                     currentTemp: currentTemp)
             }

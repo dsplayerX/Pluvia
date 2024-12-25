@@ -8,21 +8,15 @@
 import SwiftUI
 
 struct CurrentWeatherView: View {
-
+    
     // MARK:  set up the @EnvironmentObject for WeatherMapPlaceViewModel
     @EnvironmentObject var weatherMapPlaceViewModel: WeatherMapPlaceViewModel
-
+    
     // MARK:  set up local @State variable to support this view
     var body: some View {
         TopWeatherView()
         ForecastWeatherView()
         BottomTilesView()
     }
-    
 }
 
-//#Preview {
-//    CurrentWeatherView(city: "London")
-//        .background(Color.blue)
-//        .environmentObject(WeatherMapPlaceViewModel())
-//}

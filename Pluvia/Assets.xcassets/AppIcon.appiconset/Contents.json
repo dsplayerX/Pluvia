@@ -1,7 +1,7 @@
 {
   "images" : [
     {
-      "filename" : "rain-any.jpg",
+      "filename" : "Pluvia_Light_mode1.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -13,7 +13,7 @@
           "value" : "dark"
         }
       ],
-      "filename" : "rain-dark.jpg",
+      "filename" : "Pluvia_Light_mode1 1.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -25,7 +25,7 @@
           "value" : "tinted"
         }
       ],
-      "filename" : "rain-dark 1.jpg",
+      "filename" : "Pluvia_Light_mode1 2.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"

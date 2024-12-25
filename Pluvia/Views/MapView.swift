@@ -16,7 +16,7 @@ struct MapView: View {
     @State private var position: MapCameraPosition = .automatic
     @State private var selectedPin: MKMapItem?
     @State private var selectedPlace: PlaceAnnotationDataModel?
-    @Binding var backgroundColor: Color
+    @Binding var bgImageColor: Color
 
     var body: some View {
         VStack {
@@ -30,6 +30,7 @@ struct MapView: View {
                     .foregroundColor(.white)
                     .shadow(radius: 10)
                     .padding(.horizontal, 20)
+                    .padding(.top, 30)
                     Text("near \(selectedLocation.capitalized)")
                         .font(.system(size: 18))
                         .fontWeight(.medium)
@@ -42,7 +43,7 @@ struct MapView: View {
                         Marker(
                             place.name,
                             coordinate: place.coordinate
-                        ).tag(place.id).tint(backgroundColor)
+                        ).tag(place.id).tint(bgImageColor)
                     }
                 }
                 .animation(.spring, value: position)
@@ -99,9 +100,9 @@ struct MapView: View {
                         } label: {
                             Label("Directions", systemImage: "map")
                         }
-                        .tint(Color("AccentColor"))
+                        .tint(bgImageColor)
                     }
-                    .listRowBackground(backgroundColor.opacity(0.3))
+                    .listRowBackground(bgImageColor.opacity(0.3))
                 }.listStyle(.plain)
                     .listRowInsets(EdgeInsets())
                     .scrollContentBackground(.hidden)
@@ -109,7 +110,7 @@ struct MapView: View {
                     .background(Color.clear)
                     .padding(.horizontal, 20)
             }.padding(.top, 10)
-        }.padding(.top, 30)
+        }
     }
 
     // open maps app with directions to that place
