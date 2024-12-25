@@ -15,6 +15,7 @@ struct WeatherMainView: View {
     @State private var isMapViewPresented = false
     @State private var isListViewPresented = false
     @State private var backgroundImage: String = "default_day_bg"
+    @State private var backgroundColor: Color = .white // Dynamic background color
 
     var body: some View {
         ZStack {
@@ -98,6 +99,7 @@ struct WeatherMainView: View {
                                         weatherMapPlaceViewModel
                                             .weatherDataModel?.current
                                             .weather[0].id ?? 0))
+                            extractBackgroundColor()
                             try await weatherMapPlaceViewModel
                                 .fetchTouristAttractions()
                         } catch {
@@ -128,6 +130,7 @@ struct WeatherMainView: View {
                                         weatherMapPlaceViewModel
                                             .weatherDataModel?.current
                                             .weather[0].id ?? 0))
+                            extractBackgroundColor()
                             try await weatherMapPlaceViewModel
                                 .fetchTouristAttractions()
                         } catch {
@@ -154,10 +157,11 @@ struct WeatherMainView: View {
                             places: weatherMapPlaceViewModel
                                 .touristAttractionPlaces,
                             selectedLocation: weatherMapPlaceViewModel
-                                .currentLocation
+                                .currentLocation, backgroundColor: $backgroundColor
                         )
-                        .presentationDetents([.medium, .large])
+                            .presentationDetents([.fraction(0.60), .large])
                         .presentationDragIndicator(.visible)
+                        .background(backgroundColor.opacity(0.3))
                         .presentationBackground(.ultraThinMaterial)
                     }
                     .padding(.leading, 20)
@@ -195,6 +199,7 @@ struct WeatherMainView: View {
                     }
                     .sheet(isPresented: $isListViewPresented) {
                         VisitedPlacesView()
+                            .background(backgroundColor.opacity(0.3))
                             .presentationDetents([.medium, .large])
                             .presentationDragIndicator(.visible)
                             .presentationBackground(.ultraThinMaterial)
@@ -240,6 +245,7 @@ struct WeatherMainView: View {
                                         weatherMapPlaceViewModel
                                             .weatherDataModel?.current
                                             .weather[0].id ?? 0))
+                            extractBackgroundColor()
                             try await weatherMapPlaceViewModel
                                 .fetchTouristAttractions()
                         } catch {
@@ -305,6 +311,16 @@ struct WeatherMainView: View {
             backgroundImage = isDay ? "default_day_bg" : "default_night_bg"
         }
     }
+    
+    // Extract dynamic background color from the current background image
+        private func extractBackgroundColor() {
+            guard let uiImage = UIImage(named: backgroundImage),
+                  let uiColor = uiImage.averageColor() else {
+                backgroundColor = .white // Default color if extraction fails
+                return
+            }
+            backgroundColor = Color(uiColor: uiColor)
+        }
 }
 
 #Preview {

@@ -59,8 +59,7 @@ struct VisitedPlacesView: View {
                         Text(city.name.capitalized)
                         Spacer()
                         VStack(alignment: .leading) {
-                            Text("LON: \(city.latitude, specifier: "%.4f")")
-                            Text("LAT: \(city.longitude, specifier: "%.4f")")
+                            Text("\(city.latitude, specifier: "%.5f")° N, \(city.longitude, specifier: "%.5f")° W")
                         }
                     }
                     .swipeActions {

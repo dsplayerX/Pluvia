@@ -15,12 +15,13 @@ struct TopWeatherView: View {
         VStack(alignment: .center, spacing: 5) {
             if let weatherData = weatherMapPlaceViewModel.weatherDataModel {
                 
+                // Location
                 Text(weatherMapPlaceViewModel.currentLocation.capitalized)
                 .foregroundColor(.white)
                 .font(.system(size: 32))
                 .shadow(radius: 10)
             
-                
+                // Current temp
                 Text(
                     "\(Int(weatherData.current.temp))°"
                 )
@@ -28,6 +29,7 @@ struct TopWeatherView: View {
                 .font(.system(size: 100))
                 .fontWeight(.thin).shadow(radius: 10)
                 
+                // Current Condition
                 Text(
                     "\(weatherData.current.weather[0].main.rawValue)"
                 )
@@ -36,6 +38,7 @@ struct TopWeatherView: View {
                     .font(.system(size: 20))
                     .fontWeight(.medium).shadow(radius: 10).padding(.top, -5)
                 
+                // High and Low
                 Text(
                     "H:\(Int(weatherData.daily[0].temp.max))° L:\(Int(weatherData.daily[0].temp.max))°"
                 )

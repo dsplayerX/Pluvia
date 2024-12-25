@@ -5,86 +5,121 @@
 //  Created by girish lukka on 23/10/2024.
 //
 
-import SwiftUI
 import MapKit
 import SwiftData
+import SwiftUI
 
 struct MapView: View {
-//    @EnvironmentObject var weatherMapPlaceViewModel: WeatherMapPlaceViewModel
     var places: [PlaceAnnotationDataModel]
     var selectedLocation: String
-//
-//    @State private var region: MKCoordinateRegion? = nil // Make this optional
-    @State private var position: MapCameraPosition = .automatic
-        @State private var selectedItem: MKMapItem?
 
-        private var selectedPlace: PlaceAnnotationDataModel? {
-            if let selectedItem {
-                return places.first(where: { $0.id.hashValue == selectedItem.hashValue })
-            }
-            return nil
-        }
+    @State private var position: MapCameraPosition = .automatic
+    @State private var selectedPin: MKMapItem?
+    @State private var selectedPlace: PlaceAnnotationDataModel?
+    @Binding var backgroundColor: Color
 
     var body: some View {
         VStack {
             VStack {
-                // Main Content
                 VStack(alignment: .leading) {
                     Text(
                         "Tourist Attractions"
                     )
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 20)
-                        .padding(.top, 20)
+                    .font(.system(size: 28))
+                    .fontWeight(.bold)
+                    .foregroundColor(.white)
+                    .shadow(radius: 10)
+                    .padding(.horizontal, 20)
                     Text("near \(selectedLocation.capitalized)")
-                        .font(.system(size: 20))
+                        .font(.system(size: 18))
                         .fontWeight(.medium)
                         .foregroundColor(.white)
+                        .shadow(radius: 10)
                         .padding(.horizontal, 25)
                 }.frame(maxWidth: .infinity, alignment: .leading)
-                // Map showing the tourist places as pins
-//                if region != nil {
-//                    Map(coordinateRegion: .constant(region), annotationItems: weatherMapPlaceViewModel.touristAttractionPlaces) { place in
-//                        MapMarker(coordinate: place.coordinate, tint: .red)
-//                    }
-                    Map(position: $position, selection: $selectedItem) {
-                                ForEach(places, id: \.id) { place in
-                                    Marker(
-                                      place.name,
-                                      coordinate: place.coordinate
-                                    ).tag(place.id)
-                                }
-                            }
-                    .frame(height: 300)
-                    .cornerRadius(15)
-                    .padding(.horizontal, 20)
-                    .padding(.top, 10)
+                Map(position: $position, selection: $selectedPin) {
+                    ForEach(places.prefix(10), id: \.id) { place in
+                        Marker(
+                            place.name,
+                            coordinate: place.coordinate
+                        ).tag(place.id).tint(backgroundColor)
+                    }
                 }
-            
-                // List of all the tourist attraction places
-                List(places) { place in
-                    HStack{
-                        Image(systemName: "mappin.circle.fill")
-                            .foregroundColor(.red).font(.system(size: 24))
-                        VStack(alignment: .leading) {
-                            
-                            Text(place.name)
-                                .font(.headline)
-                            Text("LAT: \(place.coordinate.latitude), LON: \(place.coordinate.longitude)")
-                                .font(.subheadline)
-                                .foregroundColor(.gray)
-                        }}
-                }.listStyle(.automatic)
-                .scrollContentBackground(.hidden)
-                .background(Color.clear)
-                .padding(.top, -10)
-                
+                .animation(.spring, value: position)
+                .frame(height: 350)
+                .cornerRadius(15)
+                .padding(.horizontal, 20)
+                .padding(.top, 10)
             }
-        }
+
+            // List of top 10 the tourist attraction places
+            VStack(alignment: .leading) {
+                Text("Top 10 Must-Visit Attractions")
+                    .font(.system(size: 20))
+                    .fontWeight(.medium)
+                    .foregroundColor(.white).padding(.horizontal, 20)
+                    .shadow(radius: 10)
+
+                List(places.prefix(10)) { place in
+                    HStack {
+                        Image(systemName: "mappin")
+                            .foregroundColor(.white)
+                            .font(.system(size: 18))
+
+                        VStack(alignment: .leading) {
+                            Text(place.name)
+                                .font(.system(size: 16))
+                                .foregroundColor(.white).shadow(radius: 10)
+                                .padding(2.5)
+                            Text(
+                                "\(place.coordinate.latitude, specifier: "%.5f")° N, \(place.coordinate.longitude, specifier: "%.5f")° W"
+                            )
+                            .font(.system(size: 12))
+                            .foregroundColor(.white.opacity(0.7))
+                            .shadow(radius: 10)
+                        }
+                    }.shadow(radius: 10)
+                    .padding(2.5)
+                    .contentShape(
+                        Rectangle()
+                    ).onTapGesture {
+                        selectedPlace = place
+                        position = .region(
+                            MKCoordinateRegion(
+                                center: place.coordinate,
+                                span: MKCoordinateSpan(
+                                    latitudeDelta: 0.05,
+                                    longitudeDelta: 0.05)
+                            )
+                        )
+                    }
+                    .swipeActions(edge: .trailing) {
+                        Button {
+                            openMaps(for: place)
+                        } label: {
+                            Label("Directions", systemImage: "map")
+                        }
+                        .tint(Color("AccentColor"))
+                    }
+                    .listRowBackground(backgroundColor.opacity(0.3))
+                }.listStyle(.plain)
+                    .listRowInsets(EdgeInsets())
+                    .scrollContentBackground(.hidden)
+                    .cornerRadius(15)
+                    .background(Color.clear)
+                    .padding(.horizontal, 20)
+            }.padding(.top, 10)
+        }.padding(.top, 30)
     }
 
+    // open maps app with directions to that place
+    private func openMaps(for place: PlaceAnnotationDataModel) {
+        let coordinate = place.coordinate
+        let mapItem = MKMapItem(placemark: MKPlacemark(coordinate: coordinate))
+        mapItem.name = place.name
+        mapItem.openInMaps()
+    }
+}
 
 #Preview {
     do {

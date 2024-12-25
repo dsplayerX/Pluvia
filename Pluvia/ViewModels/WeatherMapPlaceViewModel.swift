@@ -25,7 +25,7 @@ class WeatherMapPlaceViewModel: ObservableObject {
     @Published var touristAttractionPlaces: [PlaceAnnotationDataModel] = []  // Annotations for tourist places
     @Published var errorMessage: AlertMessage? = nil
     
-    private let apiKey = ""
+    private let apiKet = ""
     
     init(modelContext: ModelContext) {
         self.modelContext = modelContext
