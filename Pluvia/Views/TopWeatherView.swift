@@ -18,7 +18,7 @@ struct TopWeatherView: View {
                 Text(weatherMapPlaceViewModel.currentLocation.capitalized)
                 .foregroundColor(.white)
                 .font(.system(size: 32))
-                .shadow(radius: 10)
+                .shadow(radius: 10).multilineTextAlignment(.center)
             
                 // Current temp
                 Text(

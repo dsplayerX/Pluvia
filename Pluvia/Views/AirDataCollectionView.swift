@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct AirDataCollectionView: View {
-
     var airData: AirDataModel
+    @Binding var bgImageColor: Color
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -24,7 +24,7 @@ struct AirDataCollectionView: View {
 
             HStack() {
                 AirQualityIndexView(
-                    value: airData.list[0].main.aqi
+                    value: airData.list[0].main.aqi, bgImageColor: $bgImageColor
                 )
                 VStack{
                     ForEach(getComponents(), id: \.0) { component in

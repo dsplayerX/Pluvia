@@ -11,12 +11,13 @@ struct CurrentWeatherView: View {
     
     // MARK:  set up the @EnvironmentObject for WeatherMapPlaceViewModel
     @EnvironmentObject var weatherMapPlaceViewModel: WeatherMapPlaceViewModel
-    
+    @Binding var bgImageColor: Color
+
     // MARK:  set up local @State variable to support this view
     var body: some View {
         TopWeatherView()
         ForecastWeatherView()
-        BottomTilesView()
+        BottomTilesView(bgImageColor: $bgImageColor)
     }
 }
 

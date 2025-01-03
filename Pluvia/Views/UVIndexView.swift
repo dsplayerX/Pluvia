@@ -50,12 +50,10 @@ struct UVIndexView: View {
                 VStack(alignment: .leading, spacing: 5) {
                     Text("\(uvIndex)")
                         .font(.system(size: 36))
-                        .fontWeight(.medium)
                         .foregroundColor(.white)
 
                     Text(getUVDescription(for: uvIndex))
                         .font(.system(size: 16))
-                        .fontWeight(.medium)
                         .foregroundColor(uvColor)
                 }
 
@@ -68,7 +66,7 @@ struct UVIndexView: View {
                                 endPoint: .trailing
                             )
                         )
-                        .frame(height: 8)
+                        .frame(height: 5)
 
                     GeometryReader { geometry in
                         Circle()
@@ -82,11 +80,12 @@ struct UVIndexView: View {
                 }
                 .frame(height: 8)
                 
-                Spacer()
                 Text(getUVMessage(for: uvIndex))
-                    .font(.system(size: 14))
-                    .foregroundColor(.white).multilineTextAlignment(.leading).lineLimit(2)
-
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.white)
+                                    .multilineTextAlignment(.leading)
+                                    .lineLimit(2)
+                                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
             }
             .padding(10)
         }

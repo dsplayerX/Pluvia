@@ -83,14 +83,16 @@ struct MapView: View {
                     .padding(2.5)
                     .contentShape(
                         Rectangle()
-                    ).onTapGesture {
+                    )
+                    .listRowBackground(bgImageColor.opacity(0.3))
+                    .onTapGesture {
                         selectedPlace = place
                         position = .region(
                             MKCoordinateRegion(
                                 center: place.coordinate,
                                 span: MKCoordinateSpan(
-                                    latitudeDelta: 0.05,
-                                    longitudeDelta: 0.05)
+                                    latitudeDelta: 0.02,
+                                    longitudeDelta: 0.02)
                             )
                         )
                     }
@@ -102,7 +104,6 @@ struct MapView: View {
                         }
                         .tint(bgImageColor)
                     }
-                    .listRowBackground(bgImageColor.opacity(0.3))
                 }.listStyle(.plain)
                     .listRowInsets(EdgeInsets())
                     .scrollContentBackground(.hidden)
@@ -113,7 +114,7 @@ struct MapView: View {
         }
     }
 
-    // open maps app with directions to that place
+    // open maps app for more information of that place
     private func openMaps(for place: PlaceAnnotationDataModel) {
         let coordinate = place.coordinate
         let mapItem = MKMapItem(placemark: MKPlacemark(coordinate: coordinate))

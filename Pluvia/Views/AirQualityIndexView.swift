@@ -17,16 +17,17 @@ import SwiftUI
 
 struct AirQualityIndexView: View {
     var value: Int
+    @Binding var bgImageColor: Color
 
     var body: some View {
         ZStack(alignment: .topLeading) {
             RoundedRectangle(cornerRadius: 15)
-                .fill(.ultraThinMaterial)
+                .fill(bgImageColor.opacity(0.3))
                 .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 2)
 
             VStack(alignment: .leading) {
                 HStack {
-                    Image(systemName: "aqi.high")
+                    Image(systemName: "aqi.medium")
                         .font(.system(size: 14))
                         .foregroundColor(Color.white.opacity(0.7))
 
@@ -71,6 +72,6 @@ struct AirQualityIndexView: View {
 }
 
 #Preview {
-    AirQualityIndexView(value: 2)
+    AirQualityIndexView(value: 2, bgImageColor: .constant(.green))
         .padding()
 }

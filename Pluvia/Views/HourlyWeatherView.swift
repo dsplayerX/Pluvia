@@ -26,7 +26,8 @@ struct HourlyWeatherView: View {
             }
             .frame(minHeight: 150)
             .padding(10)
-            .background(.ultraThinMaterial)
+            .background(.blue.opacity(0.3))
+            .background(.ultraThinMaterial.opacity(0.9))
             .cornerRadius(15)
             .padding(.horizontal, 20)
             .padding(.vertical, 2.5)

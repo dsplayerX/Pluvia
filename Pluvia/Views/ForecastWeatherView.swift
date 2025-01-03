@@ -10,20 +10,12 @@ import SwiftUI
 struct ForecastWeatherView: View {
 
     // MARK:  set up the @EnvironmentObject for WeatherMapPlaceViewModel
-        @EnvironmentObject var weatherMapPlaceViewModel: WeatherMapPlaceViewModel
-
+    @EnvironmentObject var weatherMapPlaceViewModel: WeatherMapPlaceViewModel
 
     var body: some View {
         VStack(){
-            HourlyWeatherView() // Similar to EPLClub Card=
-            DailyWeatherView() // Similar to EPLClub Row View
-
+            HourlyWeatherView()
+            DailyWeatherView()
         }
-//        .frame(height: 600)
-        // add modifiers and image to mirror the design required
     }
 }
-//
-//#Preview {
-//    ForecastWeatherView()
-//}

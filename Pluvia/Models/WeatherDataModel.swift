@@ -105,6 +105,7 @@ enum Main: String, Codable {
     case snow = "Snow"
     case drizzle = "Drizzle"
     case thunderstorm = "Thunderstorm"
+    case unknown = "Unknown" // Default case
 }
 
 enum Description: String, Codable {
@@ -167,6 +168,23 @@ enum Description: String, Codable {
     case scatteredClouds2550 = "scattered clouds: 25-50%"
     case brokenClouds5184 = "broken clouds: 51-84%"
     case overcastClouds85100 = "overcast clouds: 85-100%"
+    case unknown = "Unknown" // Default case cause values can be missing sometimes
+}
+
+extension Main {
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let value = try container.decode(String.self)
+        self = Main(rawValue: value) ?? .unknown
+    }
+}
+
+extension Description {
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let value = try container.decode(String.self)
+        self = Description(rawValue: value) ?? .unknown
+    }
 }
 
 // MARK: - Daily
@@ -223,11 +241,11 @@ struct Minutely: Codable {
 
 // MARK: - Alert
 struct AlertDM: Codable {
-    let senderName: String
-    let event: String
-    let start: Int
-    let end: Int
-    let description: String
+    let senderName: String?
+    let event: String?
+    let start: Int?
+    let end: Int?
+    let description: String?
     let tags: [String]
 
     enum CodingKeys: String, CodingKey {
