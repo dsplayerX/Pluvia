@@ -15,7 +15,7 @@ struct WeatherMainView: View {
     @State private var isMapViewPresented = false
     @State private var isListViewPresented = false
     @State private var backgroundImage: String = "default_day_bg"
-    @State private var bgImageColor: Color = .black  // Dynamic background color
+    @State private var bgImageColor: Color = .blue  // Dynamic background color
 
     var body: some View {
         ZStack {
@@ -335,7 +335,20 @@ struct WeatherMainView: View {
     }
 
     private func updateBackgroundImage(conditionID: Int) {
-        let hour = Calendar.current.component(.hour, from: Date())
+        let hour: Int
+            if let timezoneOffsetString = weatherMapPlaceViewModel.weatherDataModel?.timezone,
+               let timezoneOffset = Int(timezoneOffsetString) {
+                if let timezone = TimeZone(secondsFromGMT: timezoneOffset) {
+                    var calendar = Calendar.current
+                    calendar.timeZone = timezone
+                    hour = calendar.component(.hour, from: Date())
+                } else {
+                    hour = Calendar.current.component(.hour, from: Date())
+                }
+            } else {
+                hour = Calendar.current.component(.hour, from: Date())
+            }
+        
         let isDay = hour >= 6 && hour < 18
 
         switch conditionID {

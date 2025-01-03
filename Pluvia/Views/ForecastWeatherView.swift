@@ -11,11 +11,12 @@ struct ForecastWeatherView: View {
 
     // MARK:  set up the @EnvironmentObject for WeatherMapPlaceViewModel
     @EnvironmentObject var weatherMapPlaceViewModel: WeatherMapPlaceViewModel
-
+    @Binding var bgImageColor: Color
+    
     var body: some View {
         VStack(){
-            HourlyWeatherView()
-            DailyWeatherView()
+            HourlyWeatherView(bgImageColor: $bgImageColor)
+            DailyWeatherView(bgImageColor: $bgImageColor)
         }
     }
 }

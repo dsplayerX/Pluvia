@@ -32,7 +32,7 @@ struct VisitedPlacesView: View {
                 .padding(.top, -30)
 
                 HStack {
-                    TextField("Enter city name", text: $newCityName)
+                    TextField("Search for a city", text: $newCityName)
                         .textFieldStyle(.plain)
                         .shadow(radius: 10)
                         .foregroundColor(.white)
@@ -69,15 +69,15 @@ struct VisitedPlacesView: View {
                             .buttonStyle(.borderedProminent)
                             .foregroundStyle(.white)
                             .padding(.horizontal, 10)
-                            .padding(.vertical, 5)
+                            .padding(.vertical, 7)
                             .background(bgImageColor.opacity(0.3))
                             .shadow(radius: 10)
                             .blendMode(.screen)
                             .cornerRadius(5)
                     }
-                    //                    .disabled(newCityName.isEmpty)
+                    // .disabled(newCityName.isEmpty)
                 }
-                .padding(.horizontal, 18)
+                .padding(.horizontal, 20)
 
                 ZStack(alignment: .topLeading) {
                     List(weatherMapPlaceViewModel.locations, id: \.name) {
@@ -172,7 +172,7 @@ struct VisitedPlacesView: View {
                             }
                             .background(
                                 RoundedRectangle(cornerRadius: 10)
-                                    .fill(bgImageColor.opacity(0.3))
+                                    .fill(bgImageColor)
                             )
                             .overlay(
                                 RoundedRectangle(cornerRadius: 10)
@@ -196,12 +196,16 @@ struct VisitedPlacesView: View {
                                     newCityName = ""
                                 }
                             }
+                            .listRowInsets(EdgeInsets())
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
                         }
                         .listStyle(.plain)
                         .scrollContentBackground(.hidden)
-                        .frame(maxHeight: 150)
+                        .frame(maxHeight: 200)
                         .background(Color.clear)
-                        .padding(.horizontal, 10)
+                        .padding(.horizontal, 30)
+                        .padding(.top, -10)
                     }
                 }
             }

@@ -14,7 +14,7 @@ struct PluviaApp: App {
     var body: some Scene {
             WindowGroup {
                 WeatherMainView()
-//                    .preferredColorScheme(.dark)
+                    .preferredColorScheme(.dark)
             }.environmentObject(
                 WeatherMapPlaceViewModel(modelContext: container.mainContext)
             )

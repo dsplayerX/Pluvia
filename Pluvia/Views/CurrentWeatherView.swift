@@ -16,7 +16,7 @@ struct CurrentWeatherView: View {
     // MARK:  set up local @State variable to support this view
     var body: some View {
         TopWeatherView()
-        ForecastWeatherView()
+        ForecastWeatherView(bgImageColor: $bgImageColor)
         BottomTilesView(bgImageColor: $bgImageColor)
     }
 }

@@ -12,6 +12,7 @@ struct HourlyWeatherView: View {
 
     // MARK:  set up the @EnvironmentObject for WeatherMapPlaceViewModel
     @EnvironmentObject var weatherMapPlaceViewModel: WeatherMapPlaceViewModel
+    @Binding var bgImageColor: Color
 
     var body: some View {
         if let weatherData = weatherMapPlaceViewModel.weatherDataModel {
@@ -26,7 +27,7 @@ struct HourlyWeatherView: View {
             }
             .frame(minHeight: 150)
             .padding(10)
-            .background(.blue.opacity(0.3))
+            .background(bgImageColor.opacity(0.3))
             .background(.ultraThinMaterial.opacity(0.9))
             .cornerRadius(15)
             .padding(.horizontal, 20)

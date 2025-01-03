@@ -97,6 +97,7 @@ class WeatherMapPlaceViewModel: ObservableObject {
         }
     }
 
+    @MainActor
     func removeLocation(cityName: String) {
         Task { [weak self] in
             guard let self = self else { return }

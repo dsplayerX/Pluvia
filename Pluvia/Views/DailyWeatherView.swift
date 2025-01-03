@@ -9,6 +9,7 @@ import SwiftUI
 
 struct DailyWeatherView: View {
     @EnvironmentObject var weatherMapPlaceViewModel: WeatherMapPlaceViewModel
+    @Binding var bgImageColor: Color
 
     var body: some View {
 
@@ -24,9 +25,13 @@ struct DailyWeatherView: View {
                 Divider().background(Color.white)
                 forecastListView(weatherData: weatherData)
 
-            }.padding(10).background(.ultraThinMaterial).cornerRadius(15)
-                .padding(.horizontal, 20)
-                .padding(.vertical, 2.5)
+            }
+            .padding()
+            .background(bgImageColor.opacity(0.3))
+            .background(.ultraThinMaterial.opacity(0.9))
+            .cornerRadius(15)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 2.5)
         }
     }
 
