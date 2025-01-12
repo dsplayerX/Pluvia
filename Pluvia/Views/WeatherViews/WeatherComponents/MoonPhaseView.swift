@@ -8,29 +8,22 @@ import SwiftUI
 
 struct MoonPhaseView: View {
     var moonPhaseValue: Double  // Value between 0.0 (New Moon) and 1.0 (New Moon again)
-    var moonriseTimestamp: Int?  // Unix time of moonrise
-    var moonsetTimestamp: Int?  // Unix time of moonset
+    var moonriseTimestamp: Int  // Unix time of moonrise
+    var moonsetTimestamp: Int  // Unix time of moonset
+    var timezone: String  // Timezone of the location
 
+    // Returns the illumination percentage based on the moon phase value
     private var illuminationPercentage: Double {
         let phaseAngle = moonPhaseValue * Double.pi
         return max(0, pow(sin(phaseAngle), 2) * 100)
     }
 
+    // Returns the formatted illumination
     private var formattedIlluminationPercentage: String {
         return String(format: "%.0f%%", illuminationPercentage)
     }
 
-    private func formatTime(timestamp: Int?) -> String {
-        guard let timestamp = timestamp, timestamp > 0 else {
-            return "Not Available"
-        }
-        let date = Date(timeIntervalSince1970: TimeInterval(timestamp))
-        let formatter = DateFormatter()
-        formatter.dateStyle = .none
-        formatter.timeStyle = .short
-        return formatter.string(from: date)
-    }
-
+    // Returns the moon phase description based on the moon phase value
     private var moonPhaseDescription: String {
         switch moonPhaseValue {
         case 0.0, 1.0: return "New Moon"
@@ -77,9 +70,11 @@ struct MoonPhaseView: View {
                                 .font(.system(size: 14))
                                 .foregroundColor(.white)
                             Spacer()
-                            Text("\(formatTime(timestamp: moonriseTimestamp))")
-                                .font(.system(size: 14))
-                                .foregroundColor(.white)
+                            Text(
+                                "\(DateFormatterUtils.formattedDynamicDateHour(from: TimeInterval(moonriseTimestamp), timeZone: TimeZone(identifier: timezone) ?? .current))"
+                            )
+                            .font(.system(size: 14))
+                            .foregroundColor(.white)
                         }
                         Divider()
                         HStack {
@@ -87,9 +82,11 @@ struct MoonPhaseView: View {
                                 .font(.system(size: 14))
                                 .foregroundColor(.white)
                             Spacer()
-                            Text("\(formatTime(timestamp: moonsetTimestamp))")
-                                .font(.system(size: 14))
-                                .foregroundColor(.white)
+                            Text(
+                                "\(DateFormatterUtils.formattedDynamicDateHour(from: TimeInterval(moonsetTimestamp), timeZone: TimeZone(identifier: timezone) ?? .current))"
+                            )
+                            .font(.system(size: 14))
+                            .foregroundColor(.white)
                         }
                     }.padding(.trailing, 10)
 
@@ -106,9 +103,22 @@ struct MoonPhaseView: View {
                             .mask(
                                 LinearGradient(
                                     gradient: Gradient(stops: [
-                                        Gradient.Stop(color: Color.clear, location: max(CGFloat(illuminationPercentage / 100) - 0.05, 0)),
-                                        Gradient.Stop(color: Color.black.opacity(0.8), location: CGFloat(illuminationPercentage / 100)),
-                                        Gradient.Stop(color: Color.black.opacity(1.0), location: min(CGFloat(illuminationPercentage / 100) + 0.05, 1.0))
+                                        Gradient.Stop(
+                                            color: Color.clear,
+                                            location: max(
+                                                CGFloat(
+                                                    illuminationPercentage / 100
+                                                ) - 0.05, 0)),
+                                        Gradient.Stop(
+                                            color: Color.black.opacity(0.8),
+                                            location: CGFloat(
+                                                illuminationPercentage / 100)),
+                                        Gradient.Stop(
+                                            color: Color.black.opacity(1.0),
+                                            location: min(
+                                                CGFloat(
+                                                    illuminationPercentage / 100
+                                                ) + 0.05, 1.0)),
                                     ]),
                                     startPoint: .leading,
                                     endPoint: .trailing
@@ -126,7 +136,8 @@ struct MoonPhaseView: View {
     MoonPhaseView(
         moonPhaseValue: 0.75,
         moonriseTimestamp: 1_684_941_060,
-        moonsetTimestamp: 1_684_905_480
+        moonsetTimestamp: 1_684_905_480,
+        timezone: TimeZone.current.identifier
     )
     .padding()
     .background(Color.blue)

@@ -73,7 +73,8 @@ struct BottomTilesView: View {
                     MoonPhaseView(
                         moonPhaseValue: moonPhase,
                         moonriseTimestamp: moonrise,
-                        moonsetTimestamp: moonset
+                        moonsetTimestamp: moonset,
+                        timezone: weatherData.timezone
                     ).padding(.horizontal, 20).padding(.vertical, 2.5)
 
                 }

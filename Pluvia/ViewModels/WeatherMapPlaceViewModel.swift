@@ -26,6 +26,7 @@ class WeatherMapPlaceViewModel: ObservableObject {
     @Published var errorMessage: AlertMessage? = nil
     @AppStorage("useMetric") var useMetric: Bool = true  // Use metric units by default
     
+    private let apiKey = Secrets.apiKey  // Get openweathermap API key from Secrets.swift
 
     init(modelContext: ModelContext) {
         self.modelContext = modelContext
