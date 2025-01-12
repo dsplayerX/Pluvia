@@ -9,7 +9,7 @@ import CoreLocation
 import Foundation
 @preconcurrency import MapKit
 import SwiftData
-import SwiftUICore
+import SwiftUI
 
 class WeatherMapPlaceViewModel: ObservableObject {
 
@@ -24,9 +24,8 @@ class WeatherMapPlaceViewModel: ObservableObject {
     @Published var currentLocation = ""  // City name to fetch weather
     @Published var touristAttractionPlaces: [PlaceAnnotationDataModel] = []  // Annotations for tourist places
     @Published var errorMessage: AlertMessage? = nil
-    @Published var useMetric: Bool = true  // Use metric units by default
-
-    private let apiKey = ""
+    @AppStorage("useMetric") var useMetric: Bool = true  // Use metric units by default
+    
 
     init(modelContext: ModelContext) {
         self.modelContext = modelContext
@@ -267,6 +266,7 @@ class WeatherMapPlaceViewModel: ObservableObject {
         let weatherData = try JSONDecoder().decode(
             WeatherDataModel.self, from: data)
         //        print("Fetched Weather Data: \(weatherData.current.temp)")
+        
         DispatchQueue.main.async {
             self.weatherDataModel = weatherData
         }

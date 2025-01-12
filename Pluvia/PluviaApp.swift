@@ -14,7 +14,7 @@ struct PluviaApp: App {
     var body: some Scene {
             WindowGroup {
                 WeatherMainView()
-                    .preferredColorScheme(.dark)
+                   // .preferredColorScheme(.dark) // decided to comment out cause both modes look nice
             }.environmentObject(
                 WeatherMapPlaceViewModel(modelContext: container.mainContext)
             )
@@ -24,8 +24,6 @@ struct PluviaApp: App {
     init() {
         do {
             container = try ModelContainer(for: LocationModel.self)
-            
-            // Initialize context and fetch all locations
             let context = container.mainContext
             let allLocationsDescriptor = FetchDescriptor<LocationModel>() // Fetch all locations
 

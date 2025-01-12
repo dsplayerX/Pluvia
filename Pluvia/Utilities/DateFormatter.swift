@@ -70,13 +70,20 @@ class DateFormatterUtils {
         return dateFormatter.string(from: date)
     }
     
-    static func formattedDate24Hour(from timestamp: TimeInterval, timeZone: TimeZone) -> String {
+    static func formattedDynamicDateHour(from timestamp: TimeInterval, timeZone: TimeZone) -> String {
         let date = Date(timeIntervalSince1970: timestamp)
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "HH:mm" // 24-hour format
+        dateFormatter.dateFormat = uses12HourClock() ? "h:mm a" : "HH:mm" // Dynamically choose format
         dateFormatter.timeZone = timeZone
         return dateFormatter.string(from: date)
     }
+    
+    static func formattedDynamicHour(from timeInterval: TimeInterval, timeZone: TimeZone) -> String {
+            let formatter = DateFormatter()
+            formatter.timeZone = timeZone
+            formatter.dateFormat = uses12HourClock() ? "ha" : "HH" // Choose format dynamically
+            return formatter.string(from: Date(timeIntervalSince1970: timeInterval))
+        }
 
     static func formattedDateWithDay(from timestamp: TimeInterval) -> String {
             let dateFormatter = DateFormatter()
@@ -96,11 +103,21 @@ class DateFormatterUtils {
 
     static func formattedDateTime(from timestamp: TimeInterval) -> String {
             let dateFormatter = DateFormatter()
-            //CAMILA: date is changed to fit coursework specifications
-//            dateFormatter.dateFormat = "d MMM yyyy 'at' ha"
             dateFormatter.dateFormat = "d MMM yyyy 'at' h a"
             return dateFormatter.string(from: Date(timeIntervalSince1970: timestamp))
     }
+    
+    // Helper method to determine if the user prefers a 12-hour or 24-hour clock
+        static func uses12HourClock() -> Bool {
+            let locale = Locale.current
+            let formatter = DateFormatter()
+            formatter.locale = locale
+            formatter.dateStyle = .none
+            formatter.timeStyle = .short
+            let dateString = formatter.string(from: Date())
+            return dateString.contains("AM") || dateString.contains("PM")
+        }
+
 
 }
 

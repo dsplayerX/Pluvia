@@ -42,14 +42,14 @@ func mapWeatherIcon(for conditionID: Int, dt: Int, timezone: String)
     // Group 7xx: Atmosphere (Mist, Smoke, Haze, etc.)
     case 701, 711, 731, 741, 751, 762, 771:
         return "cloud.fog.fill"
-        
-    case 721: // Haze
+
+    case 721:  // Haze
         return isDay ? "sun.haze.fill" : "moon.haze.fill"
-        
-    case 761: // Sand
+
+    case 761:  // Sand
         return isDay ? "sun.dust.fill" : "moon.dust.fill"
-        
-    case 781: // Tornado
+
+    case 781:  // Tornado
         return "tornado"
 
     // Group 800: Clear
