@@ -10,12 +10,11 @@ import SwiftUI
 
 struct VisitedPlacesView: View {
     @EnvironmentObject var weatherMapPlaceViewModel: WeatherMapPlaceViewModel
-
-    @State private var newCityName: String = ""
+    @State private var newCityName: String = "" // New city name to add
     @Binding var bgImageColor: Color
     @Binding var selectedCityIndex: Int
-    @State private var showUnitSelection: Bool = false
-    @State private var suggestions: [String] = []
+    @State private var showUnitSelection: Bool = false // Show unit selection popup
+    @State private var suggestions: [String] = [] // Search suggestions
 
     var body: some View {
         NavigationView {
@@ -31,6 +30,7 @@ struct VisitedPlacesView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.top, -30)
 
+                // Search bar to search for and add a city
                 HStack {
                     TextField("Search for a city", text: $newCityName)
                         .textFieldStyle(.plain)
@@ -79,91 +79,97 @@ struct VisitedPlacesView: View {
                 }
                 .padding(.horizontal, 20)
 
+                // List of saved locations
                 ZStack(alignment: .topLeading) {
-                    List(weatherMapPlaceViewModel.locations, id: \.name) {
-                        city in
-                        HStack {
-                            Text(city.name.capitalized).font(.system(size: 16))
-                                .foregroundColor(.white).fontWeight(.medium)
-                                .shadow(
-                                    radius: 10)
-                            Spacer()
-                            VStack(alignment: .leading) {
-                                Text(
-                                    "\(city.latitude, specifier: "%.5f")° N, \(city.longitude, specifier: "%.5f")° W"
-                                )
-                                .font(.system(size: 14)).foregroundColor(
-                                    .white.opacity(0.7)
-                                ).fontWeight(.light).shadow(radius: 10)
-                            }
-                        }.padding(.vertical, 20).padding(.horizontal, 20)
-                            .background(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .fill(
-                                        selectedCityIndex
+                    if weatherMapPlaceViewModel.locations.isEmpty {
+                        NoSavedLocationsView()
+                    } else {
+                        List(weatherMapPlaceViewModel.locations, id: \.name) {
+                            city in
+                            HStack {
+                                Text(city.name.capitalized).font(.system(size: 16))
+                                    .foregroundColor(.white).fontWeight(.medium)
+                                    .shadow(
+                                        radius: 10)
+                                Spacer()
+                                VStack(alignment: .leading) {
+                                    Text(
+                                        "\(city.latitude, specifier: "%.5f")° N, \(city.longitude, specifier: "%.5f")° W"
+                                    )
+                                    .font(.system(size: 14)).foregroundColor(
+                                        .white.opacity(0.7)
+                                    ).fontWeight(.light).shadow(radius: 10)
+                                }
+                            }.padding(.vertical, 20).padding(.horizontal, 20)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .fill(
+                                            selectedCityIndex
                                             == weatherMapPlaceViewModel
-                                            .locations
-                                            .firstIndex(where: {
-                                                $0.name == city.name
-                                            })
+                                                .locations
+                                                .firstIndex(where: {
+                                                    $0.name == city.name
+                                                })
                                             ? bgImageColor.opacity(0.5)
                                             : bgImageColor.opacity(0.3)
-                                    )
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .stroke(
-                                        selectedCityIndex
+                                        )
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(
+                                            selectedCityIndex
                                             == weatherMapPlaceViewModel
-                                            .locations
-                                            .firstIndex(where: {
-                                                $0.name == city.name
-                                            })
+                                                .locations
+                                                .firstIndex(where: {
+                                                    $0.name == city.name
+                                                })
                                             ? Color.white.opacity(0.5)
                                             : Color.clear,
-                                        lineWidth: 1
-                                    )
-                            )
-                            .padding(.vertical, -10)
-                            .listRowBackground(Color.clear)
-                            .listRowSeparator(.hidden)
-                            .swipeActions(edge: .trailing) {
-                                Button(role: .destructive) {
-                                    Task {
-                                        weatherMapPlaceViewModel.removeLocation(
-                                            cityName: city.name)
-                                    }
-                                } label: {
-                                    Image(systemName: "trash.fill")
-                                }.padding()
-                                    .background(Color.red)
-                                    .cornerRadius(10)
-                                    .background(.clear)
-                                    .foregroundColor(.white)
-                            }
-                            .onTapGesture(perform: {
-                                if let index = weatherMapPlaceViewModel
-                                    .locations
-                                    .firstIndex(where: { $0.name == city.name })
-                                {
-                                    selectedCityIndex = index
+                                            lineWidth: 1
+                                        )
+                                )
+                                .padding(.vertical, -10)
+                                .listRowBackground(Color.clear)
+                                .listRowSeparator(.hidden)
+                                .swipeActions(edge: .trailing) {
+                                    Button(role: .destructive) {
+                                        Task {
+                                            weatherMapPlaceViewModel.removeLocation(
+                                                cityName: city.name)
+                                        }
+                                    } label: {
+                                        Image(systemName: "trash.fill")
+                                    }.padding()
+                                        .background(Color.red)
+                                        .cornerRadius(10)
+                                        .background(.clear)
+                                        .foregroundColor(.white)
                                 }
-                            })
+                                .onTapGesture(perform: {
+                                    if let index = weatherMapPlaceViewModel
+                                        .locations
+                                        .firstIndex(where: { $0.name == city.name })
+                                    {
+                                        selectedCityIndex = index
+                                    }
+                                })
+                        }
+                        .listStyle(.plain)
+                        .scrollContentBackground(.hidden)
+                        .background(Color.clear)
+                        .padding(.horizontal, 00)
+                        .alert(item: $weatherMapPlaceViewModel.errorMessage) {
+                            errorMessage in
+                            Alert(
+                                title: Text("Error"),
+                                message: Text(errorMessage.message),
+                                dismissButton: .default(Text("OK")) {
+                                    weatherMapPlaceViewModel.errorMessage = nil
+                                }
+                            )
+                        }
                     }
-                    .listStyle(.plain)
-                    .scrollContentBackground(.hidden)
-                    .background(Color.clear)
-                    .padding(.horizontal, 00)
-                    .alert(item: $weatherMapPlaceViewModel.errorMessage) {
-                        errorMessage in
-                        Alert(
-                            title: Text("Error"),
-                            message: Text(errorMessage.message),
-                            dismissButton: .default(Text("OK")) {
-                                weatherMapPlaceViewModel.errorMessage = nil
-                            }
-                        )
-                    }
+                    
 
                     if !suggestions.isEmpty {
                         List(suggestions, id: \.self) { suggestion in
@@ -253,10 +259,9 @@ struct VisitedPlacesView: View {
     }
 }
 
-
 struct UnitsMenuView: View {
     @ObservedObject var viewModel: WeatherMapPlaceViewModel
-    @Binding var isPresented: Bool // To close the popup menu
+    @Binding var isPresented: Bool  // To close the popup menu
 
     var body: some View {
         NavigationView {
@@ -265,7 +270,7 @@ struct UnitsMenuView: View {
                 List {
                     Button(action: {
                         viewModel.useMetric = true
-                        isPresented = false // Close the popup
+                        isPresented = false  // Close the popup
                     }) {
                         HStack {
                             Text("Celsius")
@@ -279,7 +284,7 @@ struct UnitsMenuView: View {
 
                     Button(action: {
                         viewModel.useMetric = false
-                        isPresented = false // Close the popup
+                        isPresented = false  // Close the popup
                     }) {
                         HStack {
                             Text("Fahrenheit")
@@ -300,7 +305,7 @@ struct UnitsMenuView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") {
-                        isPresented = false // Close the popup
+                        isPresented = false  // Close the popup
                     }
                 }
             }
@@ -308,6 +313,25 @@ struct UnitsMenuView: View {
     }
 }
 
+struct NoSavedLocationsView: View {
+    var body: some View {
+        VStack {
+            Spacer()
+            Image(systemName: "globe")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 50, height: 50)
+                .foregroundColor(.gray.opacity(0.7))
+            Text("No Locations Found")
+                .font(.system(size: 20))
+                .fontWeight(.medium)
+                .foregroundColor(.white)
+                .padding(.top, 10)
+            Spacer()
+        }
+        .padding()
+    }
+}
 
 #Preview {
     do {

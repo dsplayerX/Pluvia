@@ -11,12 +11,13 @@ import Foundation
 func mapWeatherIcon(for conditionID: Int, dt: Int, timezone: String)
     -> String
 {
+    // Get the current hour in the specified timezone
     let date = Date(timeIntervalSince1970: TimeInterval(dt))
     let formatter = DateFormatter()
     formatter.timeZone = TimeZone(identifier: timezone) ?? .current
     formatter.dateFormat = "HH"
-    let hour = Int(formatter.string(from: date)) ?? 0
-    let isDay = (hour >= 6 && hour < 18)
+    let hour = Int(formatter.string(from: date)) ?? 0 // default to 0
+    let isDay = (hour >= 6 && hour < 18) // if it's day time
 
     switch conditionID {
     // Group 2xx: Thunderstorm

@@ -10,8 +10,8 @@ import SwiftData
 import SwiftUI
 
 struct MapView: View {
-    var places: [PlaceAnnotationDataModel]
-    var selectedLocation: String
+    var places: [PlaceAnnotationDataModel] // List of tourist places
+    var selectedLocation: String // Selected location
 
     @State private var position: MapCameraPosition = .automatic
     @State private var selectedPin: MKMapItem?
@@ -85,7 +85,7 @@ struct MapView: View {
                         Rectangle()
                     )
                     .listRowBackground(bgImageColor.opacity(0.3))
-                    .onTapGesture {
+                    .onTapGesture { // on tap of the list item, show the location on the map
                         selectedPlace = place
                         position = .region(
                             MKCoordinateRegion(
@@ -96,7 +96,7 @@ struct MapView: View {
                             )
                         )
                     }
-                    .swipeActions(edge: .trailing) {
+                    .swipeActions(edge: .trailing) { // swipe action to open maps app
                         Button {
                             openMaps(for: place)
                         } label: {
@@ -125,10 +125,8 @@ struct MapView: View {
 
 #Preview {
     do {
-        // Create a temporary ModelContainer for preview purposes
         let container = try ModelContainer(for: LocationModel.self)
 
-        // Initialize the ViewModel with the model context
         let viewModel = WeatherMapPlaceViewModel(
             modelContext: container.mainContext)
 

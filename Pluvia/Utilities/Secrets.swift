@@ -13,7 +13,7 @@ struct Secrets {
         guard let path = Bundle.main.path(forResource: "Secrets", ofType: "plist"),
               let dictionary = NSDictionary(contentsOfFile: path),
               let apiKey = dictionary["OPENWEATHER_API_KEY"] as? String else {
-            fatalError("Secrets.plist is missing or API_KEY not found.")
+            fatalError("Secrets.plist is missing or OPENWEATHER_API_KEY not found.")
         }
         return apiKey
     }

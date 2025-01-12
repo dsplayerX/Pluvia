@@ -10,11 +10,10 @@ import SwiftUI
 
 struct WeatherMainView: View {
     @EnvironmentObject var weatherMapPlaceViewModel: WeatherMapPlaceViewModel
-
-    @State private var selectedCityIndex = 0
-    @State private var isMapViewPresented = false
-    @State private var isListViewPresented = false
-    @State private var backgroundImage: String = "default_day_bg"
+    @State private var selectedCityIndex = 0  // Selected city index
+    @State private var isMapViewPresented = false  // Map view presentation state
+    @State private var isListViewPresented = false  // List view presentation state
+    @State private var backgroundImage: String = "default_day_bg"  // Background image, default: clear day
     @State private var bgImageColor: Color = .blue  // Dynamic background color
 
     var body: some View {
@@ -22,28 +21,10 @@ struct WeatherMainView: View {
             BackgroundImageView(imageName: backgroundImage)
             VStack {
                 if weatherMapPlaceViewModel.locations.isEmpty {
-                    Spacer()
-                    VStack {
-                        Text("No locations added!")
-                            .font(.system(size: 24))
-                            .padding(5)
-                            .shadow(radius: 2.5)
-                        Text("Add a location to view weather data.")
-                            .font(.system(size: 20))
-                            .padding(5)
-                            .shadow(radius: 2.5)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .center)
-
-                    .multilineTextAlignment(.center)
-                    .foregroundColor(.white)
-                    .background(.ultraThinMaterial.opacity(0.5))
-                    .cornerRadius(10)
-                    .padding(.horizontal, 60)
-                    .padding(.top, 150)
-                    Spacer()
+                    EmptyStateView(isListViewPresented: $isListViewPresented)
                 }
 
+                // Weather data view for each city
                 TabView(selection: $selectedCityIndex) {
                     ForEach(
                         weatherMapPlaceViewModel.locations.indices, id: \.self
@@ -52,291 +33,228 @@ struct WeatherMainView: View {
                             CurrentWeatherView(bgImageColor: $bgImageColor)
                                 .tag(index)
                                 .frame(
-                                    maxWidth: .infinity, maxHeight: .infinity)
-                                .padding(.horizontal, horizontalPaddingForDevice())
+                                    maxWidth: .infinity, maxHeight: .infinity
+                                )
+                                .padding(
+                                    .horizontal, horizontalPaddingForDevice())
                         }
                     }
                 }
                 .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
                 .animation(.smooth, value: selectedCityIndex)
-                .onChange(of: selectedCityIndex) { oldValue, newValue in
-                    Task {
-                        do {
-                            weatherMapPlaceViewModel.resetAll()
-                            weatherMapPlaceViewModel.setNewLocation(
-                                weatherMapPlaceViewModel.locations[newValue]
-                                    .name)
-                            let coordinates =
-                                try await weatherMapPlaceViewModel
-                                .getCoordinatesForCity()
-                            try await weatherMapPlaceViewModel.fetchWeatherData(
-                                lat: coordinates.latitude,
-                                lon: coordinates.longitude)
-                            try await weatherMapPlaceViewModel
-                                .fetchAirQualityData(
-                                    lat: coordinates.latitude,
-                                    lon: coordinates.longitude)
-                            updateBackgroundImage(
-                                conditionID:
-                                    Int(
-                                        weatherMapPlaceViewModel
-                                            .weatherDataModel?.current
-                                            .weather[0].id ?? 0))
-                            extractBackgroundColor()
-                            try await weatherMapPlaceViewModel
-                                .fetchTouristAttractions()
-                        } catch {
-                            weatherMapPlaceViewModel.errorMessage =
-                                AlertMessage(
-                                    message: error.localizedDescription)
-                            print("Error: \(error.localizedDescription)")
-                        }
-                    }
+                .onChange(of: selectedCityIndex) { _, newValue in
+                    handleCityChange(at: newValue)
                 }
                 .onAppear {
-                    Task {
-                        do {
-                            weatherMapPlaceViewModel.fetchLocationsData()
-                            let coordinates =
-                                try await weatherMapPlaceViewModel
-                                .getCoordinatesForCity()
-                            try await weatherMapPlaceViewModel.fetchWeatherData(
-                                lat: coordinates.latitude,
-                                lon: coordinates.longitude)
-                            try await weatherMapPlaceViewModel
-                                .fetchAirQualityData(
-                                    lat: coordinates.latitude,
-                                    lon: coordinates.longitude)
-                            updateBackgroundImage(
-                                conditionID:
-                                    Int(
-                                        weatherMapPlaceViewModel
-                                            .weatherDataModel?.current
-                                            .weather[0].id ?? 0))
-                            extractBackgroundColor()
-                            try await weatherMapPlaceViewModel
-                                .fetchTouristAttractions()
-                        } catch {
-                            weatherMapPlaceViewModel.errorMessage =
-                                AlertMessage(
-                                    message: error.localizedDescription)
-                            print("Error: \(error.localizedDescription)")
-                        }
-                    }
+                    initializeWeatherData()
                 }
 
-                // Bottom Bar
-                HStack {
-                    // Map Button
-                    Button(action: {
-                        isMapViewPresented.toggle()
-                    }) {
-                        Image(systemName: "map")
-                            .font(.system(size: 24))
-                            .foregroundColor(.white)
-                    }
-                    .sheet(isPresented: $isMapViewPresented) {
-                        MapView(
-                            places: weatherMapPlaceViewModel
-                                .touristAttractionPlaces,
-                            selectedLocation: weatherMapPlaceViewModel
-                                .currentLocation, bgImageColor: $bgImageColor
-                        )
-                        .presentationDetents(detentsForDevice())
-                        .presentationDragIndicator(.visible)
-                        .background(bgImageColor.opacity(0.3))
-                        .presentationBackground(.ultraThinMaterial)
-                        .preferredColorScheme(.dark)
-                    }
-                    .padding(.leading, 20)
-
-                    Spacer()
-
-                    // Dot Indicators
-                    ScrollViewReader { proxy in
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 8) {
-                                ForEach(
-                                    weatherMapPlaceViewModel.locations.indices,
-                                    id: \.self
-                                ) { index in
-                                    Circle()
-                                        .frame(width: 8, height: 8)
-                                        .foregroundColor(
-                                            index == selectedCityIndex
-                                                ? .white : .gray
-                                        )
-                                        .onTapGesture {
-                                            withAnimation {
-                                                selectedCityIndex = index
-                                            }
-                                        }
-                                }
-                            }
-                            .frame(minWidth: 200, alignment: .center)
-                            .frame(maxWidth: .infinity)
-                        }
-                        .frame(maxWidth: 200)
-                        .mask(
-                            LinearGradient(
-                                gradient: Gradient(stops: [
-                                    Gradient.Stop(
-                                        color: selectedCityIndex <= 6
-                                            ? Color.black.opacity(1)
-                                            : Color.black.opacity(0),
-                                        location: 0),
-                                    Gradient.Stop(
-                                        color: Color.black.opacity(1),
-                                        location: 0.3),
-                                    Gradient.Stop(
-                                        color: Color.black.opacity(1),
-                                        location: 0.7),
-                                    Gradient.Stop(
-                                        color: (selectedCityIndex
-                                            >= weatherMapPlaceViewModel
-                                            .locations.count - 6)
-                                            ? Color.black.opacity(1)
-                                            : Color.black.opacity(0),
-                                        location: 1),
-                                ]),
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .onChange(of: selectedCityIndex) { _, newValue in
-                            withAnimation {
-                                proxy.scrollTo(newValue, anchor: .center)
-                            }
-                        }
-                    }
-
-                    Spacer()
-
-                    // List Button
-                    Button(action: {
-                        isListViewPresented.toggle()
-                    }) {
-                        Image(systemName: "list.bullet")
-                            .font(.system(size: 24))
-                            .foregroundColor(.white)
-                    }
-                    .sheet(isPresented: $isListViewPresented) {
-                        VisitedPlacesView(
-                            bgImageColor: $bgImageColor,
-                            selectedCityIndex: $selectedCityIndex
-                        )
-                        .background(bgImageColor.opacity(0.3))
-                        .presentationDetents([.fraction(0.70), .large])
-                        .presentationDragIndicator(.visible)
-                        .presentationBackground(.ultraThinMaterial)
-                        .preferredColorScheme(.dark)
-                    }
-                    .padding(.trailing, 20)
-                }
-                .padding()
-                .padding(.bottom, bottomPaddingForDevice())                .background(
-                    BlurBackground().ignoresSafeArea()
-                        .overlay(
-                        VStack {
-                            Divider()
-                                .background(Color.white.opacity(0.7))
-                            Spacer()
-                        }
-                    )
-                    )
-                .padding(.top, -8)
-                .safeAreaPadding(.bottom)
-
+                // Bottom navigation bar
+                WeatherBottomBar(
+                    isMapViewPresented: $isMapViewPresented,
+                    isListViewPresented: $isListViewPresented,
+                    selectedCityIndex: $selectedCityIndex,
+                    bgImageColor: $bgImageColor
+                )
+                .environmentObject(weatherMapPlaceViewModel)
             }
             .safeAreaPadding(.top)
             .onChange(of: weatherMapPlaceViewModel.useMetric) {
-                oldMetric, newMetric in
-                Task {
-                    do {
-                        let coordinates =
-                            try await weatherMapPlaceViewModel
-                            .getCoordinatesForCity()
-                        try await weatherMapPlaceViewModel.fetchWeatherData(
-                            lat: coordinates.latitude,
-                            lon: coordinates.longitude
-                        )
-                        try await weatherMapPlaceViewModel
-                            .fetchAirQualityData(
-                                lat: coordinates.latitude,
-                                lon: coordinates.longitude
-                            )
-                    } catch {
-                        weatherMapPlaceViewModel.errorMessage =
-                            AlertMessage(
-                                message: error.localizedDescription
-                            )
-                        print("Error: \(error.localizedDescription)")
-                    }
-                }
-
+                updateWeatherDataForMetricChange()
             }
             .onChange(of: weatherMapPlaceViewModel.locations) {
-                oldLocation, newLocations in
-                if !newLocations.isEmpty {
-                    selectedCityIndex = 0  // Reset to the first city
-                    Task {
-                        do {
-                            weatherMapPlaceViewModel.resetAll()
-                            weatherMapPlaceViewModel.fetchLocationsData()
-                            weatherMapPlaceViewModel.setNewLocation(
-                                weatherMapPlaceViewModel.locations[
-                                    selectedCityIndex
-                                ].name
-                            )
-                            let coordinates =
-                                try await weatherMapPlaceViewModel
-                                .getCoordinatesForCity()
-                            try await weatherMapPlaceViewModel.fetchWeatherData(
-                                lat: coordinates.latitude,
-                                lon: coordinates.longitude
-                            )
-                            try await weatherMapPlaceViewModel
-                                .fetchAirQualityData(
-                                    lat: coordinates.latitude,
-                                    lon: coordinates.longitude
-                                )
-                            updateBackgroundImage(
-                                conditionID:
-                                    Int(
-                                        weatherMapPlaceViewModel
-                                            .weatherDataModel?.current
-                                            .weather[0].id ?? 0))
-                            extractBackgroundColor()
-                            try await weatherMapPlaceViewModel
-                                .fetchTouristAttractions()
-                        } catch {
-                            weatherMapPlaceViewModel.errorMessage =
-                                AlertMessage(
-                                    message: error.localizedDescription
-                                )
-                            print("Error: \(error.localizedDescription)")
-                        }
-                    }
-                }
+                _, newLocations in
+                handleLocationsChange(newLocations: newLocations)
             }
         }.ignoresSafeArea()
     }
 
+    /// Initialize weather data on app launch
+    private func initializeWeatherData() {
+        Task {
+            do {
+                // Fetch saved locations
+                weatherMapPlaceViewModel.fetchLocationsData()
+
+                // Fetch coordinates for the current location
+                let coordinates =
+                    try await weatherMapPlaceViewModel.getCoordinatesForCity()
+
+                // Fetch weather data
+                try await weatherMapPlaceViewModel.fetchWeatherData(
+                    lat: coordinates.latitude,
+                    lon: coordinates.longitude
+                )
+
+                // Fetch air quality data
+                try await weatherMapPlaceViewModel.fetchAirQualityData(
+                    lat: coordinates.latitude,
+                    lon: coordinates.longitude
+                )
+
+                // Update the background image and color
+                updateBackgroundImage(
+                    conditionID: Int(
+                        weatherMapPlaceViewModel.weatherDataModel?.current
+                            .weather[0].id ?? 0)
+                )
+                extractBackgroundColor()
+
+                // Fetch tourist attractions
+                try await weatherMapPlaceViewModel.fetchTouristAttractions()
+            } catch {
+                // Handle errors and update the error message
+                weatherMapPlaceViewModel.errorMessage = AlertMessage(
+                    message: error.localizedDescription)
+                print("Error: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    /// Handle city change when the user swipes to a new city
+    /// - Parameter index: The index of the new city
+    private func handleCityChange(at index: Int) {
+        Task {
+            do {
+                weatherMapPlaceViewModel.resetAll()
+                weatherMapPlaceViewModel.setNewLocation(
+                    weatherMapPlaceViewModel.locations[index]
+                        .name)
+                let coordinates =
+                    try await weatherMapPlaceViewModel
+                    .getCoordinatesForCity()
+                try await weatherMapPlaceViewModel.fetchWeatherData(
+                    lat: coordinates.latitude,
+                    lon: coordinates.longitude)
+                try await weatherMapPlaceViewModel
+                    .fetchAirQualityData(
+                        lat: coordinates.latitude,
+                        lon: coordinates.longitude)
+                updateBackgroundImage(
+                    conditionID:
+                        Int(
+                            weatherMapPlaceViewModel
+                                .weatherDataModel?.current
+                                .weather[0].id ?? 0))
+                extractBackgroundColor()
+                try await weatherMapPlaceViewModel
+                    .fetchTouristAttractions()
+            } catch {
+                weatherMapPlaceViewModel.errorMessage =
+                    AlertMessage(
+                        message: error.localizedDescription)
+                print("Error: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    /// Updates weather and air quality data when the metric preference changes
+    private func updateWeatherDataForMetricChange() {
+        Task {
+            do {
+                // Fetch coordinates of the current location
+                let coordinates =
+                    try await weatherMapPlaceViewModel.getCoordinatesForCity()
+
+                // Fetch updated weather data based on the new metric preference
+                try await weatherMapPlaceViewModel.fetchWeatherData(
+                    lat: coordinates.latitude,
+                    lon: coordinates.longitude
+                )
+
+                // Fetch updated air quality data
+                try await weatherMapPlaceViewModel.fetchAirQualityData(
+                    lat: coordinates.latitude,
+                    lon: coordinates.longitude
+                )
+            } catch {
+                // Handle errors and update the error message
+                weatherMapPlaceViewModel.errorMessage = AlertMessage(
+                    message: error.localizedDescription
+                )
+                print("Error: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    /// Handles changes to the locations array and updates weather-related data accordingly.
+    private func handleLocationsChange(newLocations: [LocationModel]) {
+        guard !newLocations.isEmpty else { return }
+
+        selectedCityIndex = 0  // Reset to the first city
+
+        Task {
+            do {
+                // Reset the ViewModel state
+                weatherMapPlaceViewModel.resetAll()
+
+                // Refresh the locations data
+                weatherMapPlaceViewModel.fetchLocationsData()
+
+                // Set the new location based on the first city
+                weatherMapPlaceViewModel.setNewLocation(
+                    weatherMapPlaceViewModel.locations[selectedCityIndex].name
+                )
+
+                // Fetch coordinates for the first city
+                let coordinates =
+                    try await weatherMapPlaceViewModel.getCoordinatesForCity()
+
+                // Fetch updated weather data
+                try await weatherMapPlaceViewModel.fetchWeatherData(
+                    lat: coordinates.latitude,
+                    lon: coordinates.longitude
+                )
+
+                // Fetch updated air quality data
+                try await weatherMapPlaceViewModel.fetchAirQualityData(
+                    lat: coordinates.latitude,
+                    lon: coordinates.longitude
+                )
+
+                // Update background image and extract color
+                updateBackgroundImage(
+                    conditionID: Int(
+                        weatherMapPlaceViewModel.weatherDataModel?.current
+                            .weather[0].id ?? 0)
+                )
+                extractBackgroundColor()
+
+                // Fetch tourist attractions for the new location
+                try await weatherMapPlaceViewModel.fetchTouristAttractions()
+            } catch {
+                // Handle errors and display an alert message
+                weatherMapPlaceViewModel.errorMessage = AlertMessage(
+                    message: error.localizedDescription
+                )
+                print("Error: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    /// Update the background image based on the current weather condition
     private func updateBackgroundImage(conditionID: Int) {
         let hour: Int
-            if let timezoneOffsetString = weatherMapPlaceViewModel.weatherDataModel?.timezone,
-               let timezoneOffset = Int(timezoneOffsetString) {
-                if let timezone = TimeZone(secondsFromGMT: timezoneOffset) {
-                    var calendar = Calendar.current
-                    calendar.timeZone = timezone
-                    hour = calendar.component(.hour, from: Date())
-                } else {
-                    hour = Calendar.current.component(.hour, from: Date())
-                }
+        // Determine the current hour based on the timezone offset from the weather data
+        if let timezoneOffsetString = weatherMapPlaceViewModel.weatherDataModel?
+            .timezone,
+            let timezoneOffset = Int(timezoneOffsetString)
+        {
+            // If the timezone offset is available, calculate the local time using the offset
+            if let timezone = TimeZone(secondsFromGMT: timezoneOffset) {
+                var calendar = Calendar.current
+                calendar.timeZone = timezone
+                hour = calendar.component(.hour, from: Date())  // Local hour in the specified timezone
             } else {
+                // Fallback to the current system time if the timezone cannot be determined
                 hour = Calendar.current.component(.hour, from: Date())
             }
-        
+        } else {
+            // Default to system time if timezone data is not available
+            hour = Calendar.current.component(.hour, from: Date())
+        }
+
+        // Determine if it is daytime or nighttime
         let isDay = hour >= 6 && hour < 18
 
         switch conditionID {
@@ -391,28 +309,12 @@ struct WeatherMainView: View {
         guard let uiImage = UIImage(named: backgroundImage),
             let uiColor = uiImage.averageColor()
         else {
-            bgImageColor = .black  // Default color if extraction fails
+            bgImageColor = .blue  // Default color if extraction fails
             return
         }
         bgImageColor = Color(uiColor: uiColor)
     }
-    
-    // Returns the detents based on the device screen size
-    func detentsForDevice() -> Set<PresentationDetent> {
-        let screenHeight = UIScreen.main.bounds.height
 
-        if screenHeight >= 1024 {
-            // Larger devices like iPads
-            return [.large]
-        } else if screenHeight >= 812 {
-            // Devices like iPhone 16 Pro, iPhone 16 Pro Max
-            return [.fraction(0.70), .large]
-        } else {
-            // Smaller devices like iPhone SE
-            return [.large]
-        }
-    }
-    
     // Returns the horizontal padding based on the device screen
     func horizontalPaddingForDevice() -> CGFloat {
         let screenHeight = UIScreen.main.bounds.height
@@ -420,25 +322,13 @@ struct WeatherMainView: View {
         // Check for 11-inch and 13-inch devices
         if screenHeight >= 1366 {
             // 13-inch iPad (e.g., iPad Pro 12.9-inch)
-            return 240 // Larger horizontal padding
+            return 240  // Larger horizontal padding
         } else if screenHeight >= 1194 {
             // 11-inch iPad (e.g., iPad Pro 11-inch)
-            return 150 // Smaller horizontal padding
+            return 150  // Smaller horizontal padding
         } else {
             // Other devices
-            return 0 // No extra padding
-        }
-    }
-    
-    func bottomPaddingForDevice() -> CGFloat {
-        let screenHeight = UIScreen.main.bounds.height
-
-        if screenHeight <= 667 {
-            // iPhone SE or similarly small devices
-            return -15
-        } else {
-            // All other devices
-            return 10
+            return 0  // No extra padding
         }
     }
 }
@@ -468,6 +358,60 @@ struct BackgroundImageView: View {
     }
 }
 
+/// A view to display when no locations are added.
+struct EmptyStateView: View {
+    @Binding var isListViewPresented: Bool
+    var body: some View {
+        VStack (alignment: .center, spacing: 10) {
+            Image(systemName: "map.fill")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 50, height: 50)
+                .foregroundColor(.white.opacity(0.8))
+                .shadow(radius: 5)
+
+            Text("No Locations Added")
+                .font(.system(size: 24))
+                .fontWeight(.bold)
+                .foregroundColor(.white)
+                .shadow(radius: 5).padding(.top, 10)
+
+            Text(
+                """
+                Add your favorite locations to get real-time weather updates, \
+                air quality insights, and nearby tourist attractions.
+                """
+            )
+            .font(.system(size: 16))
+            .multilineTextAlignment(.center)
+            .foregroundColor(.white.opacity(0.8))
+            .padding(.horizontal, 40)
+            .shadow(radius: 2)
+            .padding(.top, 5)
+
+            if !isListViewPresented {
+                Button(action: {
+                    isListViewPresented.toggle()
+                }) {
+                    Text("Add a Location")
+                        .font(.system(size: 20))
+                        .padding(.vertical, 5)
+                        .padding(.horizontal, 15)
+                        .background(Color.white.opacity(0.4))
+                        .foregroundColor(.white)
+                        .cornerRadius(20)
+                        .padding(.horizontal, 40)
+                        .padding(.top, 10)
+                }
+            }
+            Spacer()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .cornerRadius(15)
+        .padding(.top, 100).shadow(radius: 10)
+    }
+}
+
 #Preview {
     do {
         // Create a temporary ModelContainer for preview purposes
@@ -479,7 +423,7 @@ struct BackgroundImageView: View {
 
         // Mock data for preview
         viewModel.locations = [
-            LocationModel(name: "London", latitude: 51.5074, longitude: -0.1278)
+            //            LocationModel(name: "London", latitude: 51.5074, longitude: -0.1278)
         ]
 
         return WeatherMainView()
