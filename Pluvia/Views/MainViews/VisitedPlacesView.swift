@@ -7,14 +7,15 @@
 
 import SwiftData
 import SwiftUI
+import SwipeActions
 
 struct VisitedPlacesView: View {
     @EnvironmentObject var weatherMapPlaceViewModel: WeatherMapPlaceViewModel
-    @State private var newCityName: String = "" // New city name to add
+    @State private var newCityName: String = ""  // New city name to add
     @Binding var bgImageColor: Color
     @Binding var selectedCityIndex: Int
-    @State private var showUnitSelection: Bool = false // Show unit selection popup
-    @State private var suggestions: [String] = [] // Search suggestions
+    @State private var showUnitSelection: Bool = false  // Show unit selection popup
+    @State private var suggestions: [String] = []  // Search suggestions
 
     var body: some View {
         NavigationView {
@@ -82,94 +83,119 @@ struct VisitedPlacesView: View {
                 // List of saved locations
                 ZStack(alignment: .topLeading) {
                     if weatherMapPlaceViewModel.locations.isEmpty {
-                        NoSavedLocationsView()
+                        NoSavedLocationsView().frame(
+                            maxWidth: .infinity, maxHeight: .infinity)
                     } else {
-                        List(weatherMapPlaceViewModel.locations, id: \.name) {
-                            city in
-                            HStack {
-                                Text(city.name.capitalized).font(.system(size: 16))
-                                    .foregroundColor(.white).fontWeight(.medium)
-                                    .shadow(
-                                        radius: 10)
-                                Spacer()
-                                VStack(alignment: .leading) {
-                                    Text(
-                                        "\(city.latitude, specifier: "%.5f")° N, \(city.longitude, specifier: "%.5f")° W"
+                        SwipeViewGroup {
+                            List(weatherMapPlaceViewModel.locations, id: \.name)
+                            {
+                                city in
+                                SwipeView {
+                                    HStack {
+                                        Text(city.name.capitalized).font(
+                                            .system(size: 16)
+                                        )
+                                        .foregroundColor(.white).fontWeight(
+                                            .medium
+                                        )
+                                        .shadow(
+                                            radius: 10)
+                                        Spacer()
+                                        VStack(alignment: .leading) {
+                                            Text(
+                                                "\(city.latitude, specifier: "%.5f")° N, \(city.longitude, specifier: "%.5f")° W"
+                                            )
+                                            .font(.system(size: 14))
+                                            .foregroundColor(
+                                                .white.opacity(0.7)
+                                            ).fontWeight(.light).shadow(
+                                                radius: 10)
+                                        }
+                                    }
+                                    .padding(.vertical, 25)
+                                    .padding(.horizontal, 20)
+                                    .frame(maxWidth: .infinity)
+                                    .contentShape(
+                                        Rectangle()
+                                    ).overlay(
+                                        RoundedRectangle(cornerRadius: 10)
+                                            .stroke(
+                                                selectedCityIndex
+                                                    == weatherMapPlaceViewModel
+                                                    .locations
+                                                    .firstIndex(where: {
+                                                        $0.name == city.name
+                                                    })
+                                                    ? Color.white.opacity(
+                                                        0.5)
+                                                    : Color.clear,
+                                                lineWidth: 1
+                                            )
                                     )
-                                    .font(.system(size: 14)).foregroundColor(
-                                        .white.opacity(0.7)
-                                    ).fontWeight(.light).shadow(radius: 10)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 10)
+                                            .fill(
+                                                selectedCityIndex
+                                                    == weatherMapPlaceViewModel
+                                                    .locations
+                                                    .firstIndex(where: {
+                                                        $0.name == city.name
+                                                    })
+                                                    ? bgImageColor.opacity(
+                                                        0.5)
+                                                    : bgImageColor.opacity(
+                                                        0.3)
+                                            )
+                                    )
+                                    .cornerRadius(10)
+                                    .onTapGesture(perform: {
+                                        if let index =
+                                            weatherMapPlaceViewModel
+                                            .locations
+                                            .firstIndex(where: {
+                                                $0.name == city.name
+                                            })
+                                        {
+                                            selectedCityIndex = index
+                                        }
+                                    })
+                                } trailingActions: { _ in
+                                    SwipeAction("Remove") {
+                                        Task {
+                                            weatherMapPlaceViewModel
+                                                .removeLocation(
+                                                    cityName: city.name)
+                                        }
+                                    }
+                                    .background(Color.red)
+                                    .foregroundColor(.white)
+                                    .font(.system(size: 16, weight: .bold))
+                                    // .allowSwipeToTrigger() // TODO: fix this later. commented out because it does not work in current version of SwipeActions. causes scrollview to break
                                 }
-                            }.padding(.vertical, 20).padding(.horizontal, 20)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .fill(
-                                            selectedCityIndex
-                                            == weatherMapPlaceViewModel
-                                                .locations
-                                                .firstIndex(where: {
-                                                    $0.name == city.name
-                                                })
-                                            ? bgImageColor.opacity(0.5)
-                                            : bgImageColor.opacity(0.3)
-                                        )
-                                )
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .stroke(
-                                            selectedCityIndex
-                                            == weatherMapPlaceViewModel
-                                                .locations
-                                                .firstIndex(where: {
-                                                    $0.name == city.name
-                                                })
-                                            ? Color.white.opacity(0.5)
-                                            : Color.clear,
-                                            lineWidth: 1
-                                        )
-                                )
-                                .padding(.vertical, -10)
+                                .swipeMinimumDistance(30) // temporary fix for the above issue
+                                .swipeActionsStyle(.cascade)
+                                .swipeActionCornerRadius(10)
+                                .padding(.top, -10)
                                 .listRowBackground(Color.clear)
                                 .listRowSeparator(.hidden)
-                                .swipeActions(edge: .trailing) {
-                                    Button(role: .destructive) {
-                                        Task {
-                                            weatherMapPlaceViewModel.removeLocation(
-                                                cityName: city.name)
-                                        }
-                                    } label: {
-                                        Image(systemName: "trash.fill")
-                                    }.padding()
-                                        .background(Color.red)
-                                        .cornerRadius(10)
-                                        .background(.clear)
-                                        .foregroundColor(.white)
-                                }
-                                .onTapGesture(perform: {
-                                    if let index = weatherMapPlaceViewModel
-                                        .locations
-                                        .firstIndex(where: { $0.name == city.name })
-                                    {
-                                        selectedCityIndex = index
+                            }
+                            .listStyle(.plain)
+                            .scrollContentBackground(.hidden)
+                            .background(Color.clear)
+                            .alert(item: $weatherMapPlaceViewModel.errorMessage)
+                            {
+                                errorMessage in
+                                Alert(
+                                    title: Text("Error"),
+                                    message: Text(errorMessage.message),
+                                    dismissButton: .default(Text("OK")) {
+                                        weatherMapPlaceViewModel.errorMessage =
+                                            nil
                                     }
-                                })
-                        }
-                        .listStyle(.plain)
-                        .scrollContentBackground(.hidden)
-                        .background(Color.clear)
-                        .padding(.horizontal, 00)
-                        .alert(item: $weatherMapPlaceViewModel.errorMessage) {
-                            errorMessage in
-                            Alert(
-                                title: Text("Error"),
-                                message: Text(errorMessage.message),
-                                dismissButton: .default(Text("OK")) {
-                                    weatherMapPlaceViewModel.errorMessage = nil
-                                }
-                            )
-                        }
+                                )
+                            }
+                        }.background(.clear)
                     }
-                    
 
                     if !suggestions.isEmpty {
                         List(suggestions, id: \.self) { suggestion in

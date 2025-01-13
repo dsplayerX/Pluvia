@@ -9,7 +9,6 @@ import Foundation
 import CoreLocation
 
 /* Code  to manage tourist place map pins */
-
 struct PlaceAnnotationDataModel: Identifiable {
     let id = UUID() // Unique identifier for each place
     let name: String // Name of the tourist place

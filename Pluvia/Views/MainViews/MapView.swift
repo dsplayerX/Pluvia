@@ -79,7 +79,9 @@ struct MapView: View {
                             .foregroundColor(.white.opacity(0.7))
                             .shadow(radius: 10)
                         }
-                    }.shadow(radius: 10)
+                        Spacer()
+                    }
+                    .shadow(radius: 10)
                     .padding(2.5)
                     .contentShape(
                         Rectangle()

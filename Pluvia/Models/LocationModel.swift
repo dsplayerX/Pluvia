@@ -9,8 +9,6 @@ import Foundation
 import SwiftData
 
 // MARK:   LocationModel class to be used with SwiftData - database to store places information
-// add suitable macro
-
 @Model
 class LocationModel {
     @Attribute(.unique) var name: String

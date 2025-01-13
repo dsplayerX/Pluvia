@@ -8,6 +8,7 @@
 
 import Foundation
 
+/// Load api key from Secrets.plist
 struct Secrets {
     static var apiKey: String {
         guard let path = Bundle.main.path(forResource: "Secrets", ofType: "plist"),
