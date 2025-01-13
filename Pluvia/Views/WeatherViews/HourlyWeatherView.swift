@@ -9,8 +9,6 @@ import SwiftData
 import SwiftUI
 
 struct HourlyWeatherView: View {
-
-    // MARK:  set up the @EnvironmentObject for WeatherMapPlaceViewModel
     @EnvironmentObject var weatherMapPlaceViewModel: WeatherMapPlaceViewModel
 
     var body: some View {
@@ -40,6 +38,7 @@ struct HourlyWeatherView: View {
     }
 }
 
+// MARK: - HourlyWeatherListView
 struct HourlyWeatherListView: View {
     var weatherData: WeatherDataModel
 
@@ -127,14 +126,11 @@ struct HourlyWeatherIconView: View {
 
 #Preview {
     do {
-        // Create a temporary ModelContainer for preview purposes
         let container = try ModelContainer(for: LocationModel.self)
 
-        // Initialize the ViewModel with the model context
         let viewModel = WeatherMapPlaceViewModel(
             modelContext: container.mainContext)
 
-        // Mock data for preview
         viewModel.locations = [
             LocationModel(name: "London", latitude: 51.5074, longitude: -0.1278)
         ]

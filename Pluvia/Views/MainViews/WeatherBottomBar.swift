@@ -22,21 +22,26 @@ struct WeatherBottomBar: View {
             }) {
                 Image(systemName: "map")
                     .font(.system(size: 24))
-                    .foregroundColor(.white)
-            }
-            .sheet(isPresented: $isMapViewPresented) {
-                MapView(
-                    places: weatherMapPlaceViewModel.touristAttractionPlaces,
-                    selectedLocation: weatherMapPlaceViewModel.currentLocation,
-                    bgImageColor: $bgImageColor
-                )
-                .presentationDetents(detentsForDevice())
-                .presentationDragIndicator(.visible)
-                .background(bgImageColor.opacity(0.3))
-                .presentationBackground(.ultraThinMaterial)
-                .preferredColorScheme(.dark)
-            }
-            .padding(.leading, 20)
+                    .foregroundColor(
+                        weatherMapPlaceViewModel.locations.isEmpty
+                            ? .gray : .white
+                    )
+            }.disabled(weatherMapPlaceViewModel.locations.isEmpty)  // if no locations, disable the button
+                .sheet(isPresented: $isMapViewPresented) {
+                    MapView(
+                        places: weatherMapPlaceViewModel
+                            .touristAttractionPlaces,
+                        selectedLocation: weatherMapPlaceViewModel
+                            .currentLocation,
+                        bgImageColor: $bgImageColor
+                    )
+                    .presentationDetents(detentsForDevice())
+                    .presentationDragIndicator(.visible)
+                    .background(bgImageColor.opacity(0.3))
+                    .presentationBackground(.ultraThinMaterial)
+                    .preferredColorScheme(.dark)
+                }
+                .padding(.leading, 20)
 
             Spacer()
 

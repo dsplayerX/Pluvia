@@ -393,7 +393,7 @@ struct EmptyStateView: View {
                 Button(action: {
                     isListViewPresented.toggle()
                 }) {
-                    Text("Add a Location")
+                    Text("Add Location")
                         .font(.system(size: 20))
                         .padding(.vertical, 5)
                         .padding(.horizontal, 15)

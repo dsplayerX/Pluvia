@@ -52,6 +52,7 @@ struct AirQualityIndexView: View {
         .aspectRatio(1, contentMode: .fit)
     }
     
+    // Get the description for the AQI value
     private func getAQIDescription(for value: Int) -> String {
            switch value {
            case 1:

@@ -10,16 +10,7 @@ import SwiftUI
 struct PrecipitationView: View {
     var precipitationToday: Int // Precipitation in mm for today
     var precipitationTomorrow: Int // Precipitation in mm for tomorrow
-    @Binding var useMetric: Bool // Use metric (mm) or imperial (inches)
-
-    private var description: String {
-        let tomorrowPrecipitation = formattedPrecipitation(precipitationTomorrow)
-        if precipitationTomorrow > 0 {
-            return "\(tomorrowPrecipitation) expected tomorrow."
-        } else {
-            return "No precipitation expected tomorrow."
-        }
-    }
+    @Binding var useMetric: Bool // mm or inches based on the unit
 
     var body: some View {
         ZStack(alignment: .topLeading) {
@@ -65,7 +56,18 @@ struct PrecipitationView: View {
         }
         .aspectRatio(1, contentMode: .fit)
     }
+    
+    // Get the description for the precipitation widget
+    private var description: String {
+        let tomorrowPrecipitation = formattedPrecipitation(precipitationTomorrow)
+        if precipitationTomorrow > 0 {
+            return "\(tomorrowPrecipitation) expected tomorrow."
+        } else {
+            return "No precipitation expected tomorrow."
+        }
+    }
 
+    // Get the formatted precipitation value
     private func formattedPrecipitation(_ precipitation: Int) -> String {
         if useMetric {
             return "\(precipitation) mm"
@@ -75,6 +77,7 @@ struct PrecipitationView: View {
         }
     }
 
+    // Get the unit label based on the unit
     private func unitLabel() -> String {
         return useMetric ? "mm" : "in"
     }

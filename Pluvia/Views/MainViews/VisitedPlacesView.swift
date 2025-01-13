@@ -58,7 +58,7 @@ struct VisitedPlacesView: View {
                                 }
                             }
                         }
-
+                    // Button to add a city
                     Button(action: {
                         Task {
                             weatherMapPlaceViewModel

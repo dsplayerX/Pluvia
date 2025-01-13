@@ -106,7 +106,8 @@ struct SunriseSunsetView: View {
         }
         .aspectRatio(2.5, contentMode: .fit)
     }
-
+    
+    // Calculate the daylight duration
     private func calculateDaylightDuration() -> String {
         let daylightSeconds = sunsetTime.timeIntervalSince(sunriseTime)
         let hours = Int(daylightSeconds) / 3600

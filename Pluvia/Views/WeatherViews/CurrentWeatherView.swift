@@ -8,6 +8,7 @@
 import MapKit
 import SwiftUI
 
+/// The current weather view
 struct CurrentWeatherView: View {
     @Binding var bgImageColor: Color
 
@@ -23,6 +24,7 @@ struct CurrentWeatherView: View {
     }
 }
 
+/// To open the location in Maps and to learn more about weather data
 struct BottomInfoView: View {
     @EnvironmentObject var weatherMapPlaceViewModel: WeatherMapPlaceViewModel
 

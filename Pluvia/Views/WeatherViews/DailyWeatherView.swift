@@ -38,6 +38,7 @@ struct DailyWeatherView: View {
         }
     }
 
+    // Forecast list view for the 7-day weather forecast
     private func forecastListView(weatherData: WeatherDataModel) -> some View {
 
         let globalMinTemp =
@@ -65,6 +66,7 @@ struct DailyWeatherView: View {
     }
 }
 
+// A row of the daily weather forecast
 struct DailyWeatherRowView: View {
     let index: Int
     let day: Daily
@@ -104,7 +106,7 @@ struct DailyWeatherRowView: View {
                 Text("\(Int(day.temp.min))°")
                     .foregroundColor(.white)
                     .font(.system(size: 20)).fontWeight(.medium).frame(
-                        width: 40)
+                        width: 50)
 
                 TempBarView(
                     index: index,
@@ -122,7 +124,7 @@ struct DailyWeatherRowView: View {
                 Text("\(Int(day.temp.max))°")
                     .foregroundColor(.white)
                     .font(.system(size: 20)).fontWeight(.medium).frame(
-                        width: 40)
+                        width: 50)
             }
             .padding(.horizontal, 5)
         }
@@ -138,6 +140,7 @@ struct DailyWeatherRowView: View {
     }
 }
 
+// The high and low temperature bar 
 struct TempBarView: View {
     let index: Int
     let minTemp: Double

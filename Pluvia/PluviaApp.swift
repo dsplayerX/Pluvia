@@ -14,7 +14,6 @@ struct PluviaApp: App {
     var body: some Scene {
             WindowGroup {
                 WeatherMainView()
-                   // .preferredColorScheme(.dark) // decided to comment out cause both modes look nice
             }.environmentObject(
                 WeatherMapPlaceViewModel(modelContext: container.mainContext)
             )
@@ -37,9 +36,10 @@ struct PluviaApp: App {
                     longitude: -0.1278
                 )
                 context.insert(londonLocation)
-                try context.save()
+                try context.save() // Save the default location
             }
         } catch {
+            // Error initializing the model container or saving the default location
             fatalError("Failed to initialize LocationModel or save default location: \(error.localizedDescription)")
         }
     }

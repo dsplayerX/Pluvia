@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+/// A view that represents the bottom tiles view of the main weather
 struct BottomTilesView: View {
     @EnvironmentObject var weatherMapPlaceViewModel: WeatherMapPlaceViewModel
     @Binding var bgImageColor: Color
@@ -15,6 +16,7 @@ struct BottomTilesView: View {
 
         VStack {
             if let weatherData = weatherMapPlaceViewModel.weatherDataModel {
+                // Feels like, humidity views
                 HStack {
                     FeelsLikeView(
                         feelsLikeTemp: Int(weatherData.current.feelsLike),
@@ -26,6 +28,7 @@ struct BottomTilesView: View {
                     )
                 }.padding(.horizontal, 20).padding(.vertical, 2.5)
 
+                // Sunrise, sunset view
                 HStack {
                     SunriseSunsetView(
                         sunriseTimestamp: Int(weatherData.current.sunrise!),
@@ -34,6 +37,7 @@ struct BottomTilesView: View {
                     )
                 }.padding(.horizontal, 20).padding(.vertical, 2.5)
 
+                // UV index, air pressure views
                 HStack {
                     UVIndexView(uvIndex: Int(weatherData.current.uvi))
                     AirPressureView(
@@ -41,6 +45,7 @@ struct BottomTilesView: View {
                     )
                 }.padding(.horizontal, 20).padding(.vertical, 2.5)
 
+                // Wind speed, gusts, direction view
                 WindSpeedView(
                     windSpeed: weatherData.current.windSpeed,
                     windGusts: weatherData.current.windGust,
@@ -50,6 +55,7 @@ struct BottomTilesView: View {
                 .padding(.horizontal, 20)
                 .padding(.vertical, 2.5)
 
+                // Precipitation, visibility views
                 HStack {
                     PrecipitationView(
                         precipitationToday: Int(
@@ -66,6 +72,7 @@ struct BottomTilesView: View {
                     )
                 }.padding(.horizontal, 20).padding(.vertical, 2.5)
 
+                // Moon phase view
                 if let moonPhase = weatherData.daily.first?.moonPhase,
                     let moonrise = weatherData.daily.first?.moonrise,
                     let moonset = weatherData.daily.first?.moonset
@@ -79,6 +86,7 @@ struct BottomTilesView: View {
 
                 }
 
+                // Air quality index, averages view
                 HStack {
                     if let airData = weatherMapPlaceViewModel.airDataModel {
                         AirQualityIndexView(
@@ -100,6 +108,7 @@ struct BottomTilesView: View {
 
             }
 
+            // Air data components view
             if let airData = weatherMapPlaceViewModel.airDataModel {
                 AirDataCollectionView(
                     airData: airData, bgImageColor: $bgImageColor

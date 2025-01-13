@@ -17,7 +17,6 @@ struct AveragesView: View {
             BlurBackground().cornerRadius(15)
             
             VStack(alignment: .leading) {
-                // Title
                 HStack {
                     Image(systemName: "chart.line.uptrend.xyaxis")
                         .font(.system(size: 14))
@@ -78,14 +77,14 @@ struct AveragesView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
             AveragesView(temperatureDifference: 2, todayHigh: 32, averageHigh: 30)
-                .previewLayout(.sizeThatFits) // Adjusts to fit the content size
+                .previewLayout(.sizeThatFits)
                 .padding()
-                .background(Color.blue) // Optional background for better visibility
+                .background(Color.blue)
 
             AveragesView(temperatureDifference: -3, todayHigh: 25, averageHigh: 28)
                 .previewLayout(.sizeThatFits)
                 .padding()
-                .background(Color.black) // Simulating a dark mode environment
+                .background(Color.black)
         }
     }
 }

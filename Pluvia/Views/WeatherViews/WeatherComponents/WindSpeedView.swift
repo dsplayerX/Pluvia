@@ -80,6 +80,7 @@ struct WindSpeedView: View {
         .aspectRatio(2.5, contentMode: .fit)
     }
     
+    // Get the formatted speed value
     private func formattedSpeed(_ speed: Double) -> String {
            if useMetric {
                return "\(String(format: "%.1f", speed)) km/h"
@@ -89,6 +90,7 @@ struct WindSpeedView: View {
            }
        }
 
+    // Get the compass direction for the wind direction in degrees
     private func compassDirection(for degrees: Int) -> String {
         switch degrees {
         case 0...22, 338...360: return "N"
@@ -104,7 +106,7 @@ struct WindSpeedView: View {
     }
 }
 
-
+// Compass View for Wind Direction
 struct CompassView: View {
     var windDirection: Int // Wind direction in degrees
 

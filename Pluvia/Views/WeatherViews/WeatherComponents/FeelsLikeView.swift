@@ -11,22 +11,6 @@ struct FeelsLikeView: View {
     var feelsLikeTemp: Int
     var currentTemp: Int
 
-    private var description: String {
-        let difference = feelsLikeTemp - currentTemp
-        switch difference {
-        case Int.min..<(-3):
-            return "Feels much colder than the actual temperature."
-        case -3..<0:
-            return "Slightly cooler than the actual temperature."
-        case 0:
-            return "Similar to the actual temperature."
-        case 1...3:
-            return "Slightly warmer than the actual temperature."
-        default:
-            return "Feels much warmer than the actual temperature."
-        }
-    }
-
     var body: some View {
         ZStack(alignment: .topLeading) {
             BlurBackground().cornerRadius(15)
@@ -57,6 +41,23 @@ struct FeelsLikeView: View {
             }
             .padding(10)
         }.aspectRatio(1, contentMode: .fit)
+    }
+    
+    // Get the description for the feels like temperature
+    private var description: String {
+        let difference = feelsLikeTemp - currentTemp
+        switch difference {
+        case Int.min..<(-3):
+            return "Feels much colder than the actual temperature."
+        case -3..<0:
+            return "Slightly cooler than the actual temperature."
+        case 0:
+            return "Similar to the actual temperature."
+        case 1...3:
+            return "Slightly warmer than the actual temperature."
+        default:
+            return "Feels much warmer than the actual temperature."
+        }
     }
 }
 

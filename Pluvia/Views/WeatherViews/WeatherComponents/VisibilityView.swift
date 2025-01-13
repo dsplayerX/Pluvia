@@ -11,6 +11,7 @@ struct VisibilityView: View {
     var visibility: Int // in meters
     @Binding var useMetric: Bool // true if metric units are used
 
+    // Description based on the visibility value
     private var description: String {
         if visibility/1000 >= 10 {
             return "Perfectly clear view."
@@ -23,6 +24,7 @@ struct VisibilityView: View {
         }
     }
     
+    // Formatted visibility value based on the unit
     private var formattedVisibility: String {
             if useMetric {
                 return "\(visibility / 1000) km"

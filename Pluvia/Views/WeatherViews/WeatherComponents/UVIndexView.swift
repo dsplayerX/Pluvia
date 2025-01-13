@@ -10,6 +10,7 @@ import SwiftUI
 struct UVIndexView: View {
     var uvIndex: Int
 
+    // Gradient colors for the UV index bar
     private var gradientColors: [Color] {
         [
             Color.green,  // Low
@@ -20,6 +21,7 @@ struct UVIndexView: View {
         ]
     }
 
+    // UV index color based on the value
     private var uvColor: Color {
         switch uvIndex {
         case 0...2: return Color.green  // Low
@@ -97,6 +99,7 @@ struct UVIndexView: View {
         .aspectRatio(1, contentMode: .fit)
     }
 
+    // Get the UV description based on the index value
     private func getUVDescription(for index: Int) -> String {
         switch index {
         case 0...2: return "Low"
@@ -107,6 +110,7 @@ struct UVIndexView: View {
         }
     }
 
+    // Get the message based on the UV index value
     private func getUVMessage(for index: Int) -> String {
         switch index {
         case 0...2:

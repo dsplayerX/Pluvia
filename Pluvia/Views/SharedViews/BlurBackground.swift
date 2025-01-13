@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+/// A view that represents a blurred background of a weather widget.
 struct BlurBackground: UIViewRepresentable {
     func makeUIView(context: Context) -> UIVisualEffectView {
         let blurEffectView = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterialDark))
